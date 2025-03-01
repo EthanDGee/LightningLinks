@@ -175,5 +175,3 @@ if __name__ == "__main__":
         note_handler.write_to_file(note_directory, notes[i])
 
     notes = note_handler.save_similar_notes(note_directory, notes)
-
-    print("UPDATED FILES")
