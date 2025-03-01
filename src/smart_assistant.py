@@ -1,9 +1,8 @@
 from openai import OpenAI
-from torch.onnx.symbolic_opset9 import new_full
-
 import note_handler
 import pydantic
 
+def format_similar_notes()
 
 
 def create(prompt, directory):
@@ -11,7 +10,7 @@ def create(prompt, directory):
         links: str
         tags: str
         body: str
-        similar_notes : str
+        similar_notes: list
 
     client = OpenAI()
 
@@ -30,16 +29,39 @@ def create(prompt, directory):
     # get all note names
     all_note_names = note_handler.get_all_note_names(directory)
 
-    # ask open ai for structured output that matches newFile
+    # ask open AI for structured output that matches newFile
     model = 'gpt-4o'
     response_format = NewFile
     temperature = 0.5
 
-    system_prompt
-
+    system_prompt = """
+    You will be provided with the parsed contents of a note, as well as some similar notes that reference the same topic, as well as a list of links to select for the linking process.
+    Your goal is to create a new note that is structured in a way that aligns with the parameters of the NewFile class, and covers the topic provided in the user prompt
+    The parameters are as follows:
+    - file_name: short title summarizing the main idea of the note
+    - links: a string of links to other notes or resources related to the note seperated by newlines
+    - tags: a string of keywords or tags associated with the note
+    - body: a note on the topic provided in the user prompt that matches the styling of the other bodies provided
+    - similar_notes: array of titles (or identifiers) of related notes or similar entries if present
+    """
 
     # save note using note_handler.write_note
 
-    similar_notes = note_handler.load_similar_notes(directory)
+
+
+    user_prompt = f""""""
+
+
+    completion = client.beta.chat.completions.parse(
+        model=model,
+        temperature=temperature,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": note_content}
+        ],
+        response_format=response_format,
+    )
+
+    note_handler.write_to_file(directory, new_note)
 
 
