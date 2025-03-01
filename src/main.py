@@ -56,18 +56,32 @@ def find_min(row):
     return min_index
 
 
-def get_top_n_similarities_from_row(row, n: int = 10):
+def get_top_n_similarities_from_row(row, num_similarities: int = 10):
     """
     Retrieves the indexes of the top n highest values in a given row.
 
     Args:
         row (list): A list of numeric values.
-        n (int, optional): The number of top values to retrieve. Defaults to 10.
+        num_similarities (int, optional): The number of top values to retrieve. Defaults to 10.
 
     Returns:
         list: A list of indexes corresponding to the top n highest values in the row.
     """
-    for item in len(row):
+    # create initial top_n from 0 to n-1
+    top_n_indexes = row[0:num_similarities - 1]
+    smallest_index = find_min(row)
+    smallest_value = row[smallest_index]
+
+    # now we iterate through the remaining entries and continually swap out the smallest entry when we find a bigger entry
+    for index in len(num_similarities, len(row)):
+        if row[index] > smallest_value:
+            # swap out for the higher value
+            top_n_indexes[smallest_index] = index
+            # find new smallest
+            smallest_index = find_min(row)
+            smallest_value = row[smallest_index]
+
+    return top_n_indexes
 
 
 def get_all_top_n_similarities(similarities, n: int = 10):
@@ -81,6 +95,16 @@ def get_all_top_n_similarities(similarities, n: int = 10):
     Returns:
         list: A list of lists where each sublist contains the indexes of the top n similarities for a row.
     """
+
+    top_n_indexes_table = []
+
+    for row in similarities:
+        # find the rows top n indexes
+        top_n_indexes = get_top_n_similarities_from_row(row, n)
+        # add to the table
+        top_n_indexes_table.append(top_n_indexes)
+
+    return top_n_indexes_table
 
 
 if __name__ == "__main__":
