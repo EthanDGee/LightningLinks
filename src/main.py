@@ -2,55 +2,43 @@ import os
 
 
 def parse_note(file_path: str):
-    smart_links_header = "[//]: # (Smart Links)"
+    # Constants for better readability
+    SMART_LINKS_HEADER = "[//]: # (Smart Links)"
+    LINK_START = "[["
+    LINK_END = "]]"
 
-    # set up dictionary
+    # Dictionary to store the parsed note content
     note_info = {"links": "", "body": "", "smart_links": ""}
 
-    # read through the file and place into seperate categories
+    # Open the file and iterate through its contents
     with open(file_path, 'r') as file:
-        in_headers = True
+        current_line = file.readline()
 
-        # parse header links
-
-        while in_headers:
-
-            line = file.readline()
-
-            # if the link follows the conventional link format
-            if line[0:1] == '[[' and line[-3:] == "]]\n":
-                note_info["links"] += line[2:-3] + "\n"
-
-            if line == "":
-                # if the end of the file is reached return parsed information
-
-                in_headers = False
-                return note_info
-
-        # parse body
-        in_body = True
-
-        while in_body:
-            line = file.readline()
-
-
-
-            if line.strip("\n") == smart_links_header:
-                in_body = False
+        # Parse links (header section)
+        while current_line:
+            if current_line.startswith(LINK_START) and current_line.endswith(LINK_END + "\n"):
+                note_info["links"] += current_line[len(LINK_START):-len(LINK_END + "\n")] + "\n"
             else:
-                note_info["body"] += line.strip("\n")
+                break  # Exit loop when we encounter a non-link line
+            current_line = file.readline()
 
-        # parse smart_links (optional)
-        end_of_note = False
-        while not end_of_note:
-            line = file.readline()
-            if line.strip("\n") == "":
-                end_of_note = True
-            else:
-                note_info["smart_links"] += line.strip("\n")
+        # Parse body (main content)
+        while current_line:
+            if current_line.strip() == SMART_LINKS_HEADER:  # Stop when we reach the Smart Links section
+                current_line = file.readline()
+                break
+            note_info["body"] += current_line.strip("\n")
+            current_line = file.readline()
 
+        # Parse smart links (optional section at the end)
+        while current_line:
+            if not current_line.strip():  # Stop at the first empty line
+                break
+            note_info["smart_links"] += current_line.strip("\n")
+            current_line = file.readline()
 
     return note_info
+
 
 def load_all_markdown_files(directory):
     all_files = {}
@@ -76,8 +64,12 @@ if __name__ == "__main__":
     #         print(file.readline())
 
 
+    parse_file = parse_note("../demoData/regularization.md")
+    print(parse_file)
+
+
     loaded_files = load_all_markdown_files("../demoData")
 
-    for file in loaded_files.keys():
-        print(f"{'-----'*6}{file}{'------'*6}")
-        print(loaded_files[file])
+    # for file in loaded_files.keys():
+    #     print(f"{'-----'*6}{file}{'------'*6}")
+    #     print(loaded_files[file])
