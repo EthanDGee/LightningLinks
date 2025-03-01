@@ -1,3 +1,6 @@
+import os
+
+
 def parse_note(file_path: str):
     smart_links_header = "[//]: # (Smart Links)"
 
@@ -49,7 +52,32 @@ def parse_note(file_path: str):
 
     return note_info
 
+def load_all_markdown_files(directory):
+    all_files = {}
+
+
+    for file_name in os.listdir(directory):
+        file_path = os.path.join(directory, file_name)
+
+        if os.path.isfile(file_path) and file_name.endswith(".md"):
+            with open(file_path, 'r', encoding='utf-8') as file:
+                file_content = file.read()
+                all_files[file_name] = file_content
+
+    return all_files
 
 if __name__ == "__main__":
-    note_info = parse_note("../demoData/classification.md")
-    print(note_info)
+    # note_info = parse_note("../demoData/regularization.md")
+    # print(note_info)
+    #
+    # with open("../demoData/regularization.md", 'r') as file:
+    #     while file.readline() != "":
+    #
+    #         print(file.readline())
+
+
+    loaded_files = load_all_markdown_files("../demoData")
+
+    for file in loaded_files.keys():
+        print(f"{'-----'*6}{file}{'------'*6}")
+        print(loaded_files[file])
