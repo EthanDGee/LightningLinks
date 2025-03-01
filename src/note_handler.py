@@ -64,14 +64,14 @@ def parse_note(file_path: str):
 
     return note_info
 
-def get_all_notes(directory):
+def get_all_note_names(directory):
     all_notes = []
 
     for file_name in os.listdir(directory):
 
         file_path = os.path.join(directory, file_name)
         if os.path.isfile(file_path) and file_name.endswith(".md"):
-            all_notes.append(file_name)
+            all_notes.append(f'[[{file_name.replace(".md", "")}]]')
 
     return all_notes
 
@@ -156,11 +156,8 @@ def load_similar_notes(directory):
         similar_notes_dict = json.load(file)
     return similar_notes_dict
 
-def get_last_open(directory):
+def get_current_note(directory):
     with open(f"{directory}.obsidian/workspace.json", 'r', encoding='utf-8') as file:
         last_open = json.load(file)
 
     return last_open["lastOpenFiles"][0]
-
-if __name__ == "__main__":
-    print(get_last_open("../demoData/"))
