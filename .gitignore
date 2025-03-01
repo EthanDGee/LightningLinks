@@ -1,4 +1,6 @@
-_showyourwork.sqlite
+*.sqlite
+
+
 
 .venv/*
 Scripts/*
@@ -35,7 +37,7 @@ __pycache__
 
 # PyCharm pollutants
 .idea
-_showyourwork.sqlite
+
 
 # Crash trash
 *.core
