@@ -1,5 +1,6 @@
 import unittest
-from src.main import find_min_of_indexes, get_top_n_similarities_from_row
+from src.main import find_min_of_indexes, get_top_n_similarities_from_row, get_all_top_n_similarities
+import torch
 
 
 class TestFindMinFromIndexes(unittest.TestCase):
@@ -90,6 +91,67 @@ class TestGetTopNSimilaritiesFromRow(unittest.TestCase):
         expected = [0, 1, 2, 3]  # Indices of the top 4 values
         self.assertEqual(expected, result)
 
+class TestGetAllTopNSimilarities(unittest.TestCase):
+
+    def test_get_all_top_n_similarities_basic(self):
+        similarities = torch.tensor([
+            [0.1, 0.5, 0.3],
+            [0.8, 0.2, 0.4],
+            [0.6, 0.9, 0.7]
+        ])
+        n = 2
+        expected = [
+            [1, 2],
+            [0, 2],
+            [1, 2]
+        ]
+        result = get_all_top_n_similarities(similarities, n)
+        for row in result:
+            row.sort()
+
+        self.assertEqual(expected, result, )
+
+    def test_get_all_top_n_similarities_single_row(self):
+        similarities = torch.tensor([
+            [0.9, 0.4, 0.6]
+        ])
+        n = 2
+        expected = [
+            [0, 2]
+        ]
+        result = get_all_top_n_similarities(similarities, n)
+        self.assertEqual(result, expected)
+
+    def test_get_all_top_n_similarities_n_greater_than_length(self):
+        similarities = torch.tensor([
+            [0.5, 0.8, 0.3],
+            [0.4, 0.2, 0.1]
+        ])
+        n = 5
+        expected = [
+            [0, 1, 2],
+            [0, 1, 2]
+        ]
+        result = get_all_top_n_similarities(similarities, n)
+        for row in result:
+            row.sort()
+        self.assertEqual(expected, result)
+
+    def test_get_all_top_n_similarities_n_equals_zero(self):
+        similarities = torch.tensor([
+            [0.1, 0.5, 0.3],
+            [0.8, 0.2, 0.4]
+        ])
+        n = 0
+        expected = [
+            [],
+            []
+        ]
+        result = get_all_top_n_similarities(similarities, n)
+        for row in result:
+            row.sort()
+
+        self.assertEqual(expected, result)
 
 if __name__ == '__main__':
     unittest.main()
