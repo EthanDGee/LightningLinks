@@ -11,7 +11,7 @@ def parse_note(file_path: str):
     note_info = {"links": "", "body": "", "smart_links": ""}
 
     # Open the file and iterate through its contents
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding='utf-8') as file:
         current_line = file.readline()
 
         # Parse links (header section)
@@ -48,8 +48,9 @@ def load_all_markdown_files(directory):
         file_path = os.path.join(directory, file_name)
 
         if os.path.isfile(file_path) and file_name.endswith(".md"):
-            with open(file_path, 'r', encoding='utf-8') as file:
-                file_content = file.read()
+            # with open(file_path, 'r', encoding='utf-8') as file:
+                file_content = parse_note(file_path)
+
                 all_files[file_name] = file_content
 
     return all_files
@@ -70,6 +71,6 @@ if __name__ == "__main__":
 
     loaded_files = load_all_markdown_files("../demoData")
 
-    # for file in loaded_files.keys():
-    #     print(f"{'-----'*6}{file}{'------'*6}")
-    #     print(loaded_files[file])
+    for file in loaded_files.keys():
+        print(f"{'-----'*6}{file}{'------'*6}")
+        print(loaded_files[file])
