@@ -2,13 +2,26 @@ import os
 
 
 def parse_note(file_path: str):
+    """
+    Parses the contents of a Markdown file to extract specific sections: links, tags, body, and smart links.
+
+    Args:
+        file_path (str): Path to the Markdown file to be parsed.
+
+    Returns:
+        dict: A dictionary containing the following keys:
+            - 'links': Links extracted from the header (as a newline-separated string).
+            - 'tags': Tags extracted (prefixed with '#', as a single string).
+            - 'body': Main content of the file (excluding smart links section).
+            - 'smart_links': Smart Links section content (if any, otherwise empty string).
+    """
     # Constants for better readability
     SMART_LINKS_HEADER = "[//]: # (Smart Links)"
     LINK_START = "[["
     LINK_END = "]]"
 
     # Dictionary to store the parsed note content
-    note_info = {"links": "", "body": "", "smart_links": ""}
+    note_info = {"links": "", "tags" : "", "body": "", "smart_links": ""}
 
     # Open the file and iterate through its contents
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -21,6 +34,18 @@ def parse_note(file_path: str):
             else:
                 break  # Exit loop when we encounter a non-link line
             current_line = file.readline()
+
+        # skip the blank line
+        current_line = file.readline()
+        # Parse Tags
+
+        while current_line:
+            if current_line.startswith("#") and not current_line.startswith("# "):
+                note_info["tags"] += current_line.strip("\n")
+            else:
+                break
+            current_line = file.readline()
+
 
         # Parse body (main content)
         while current_line:
@@ -41,17 +66,30 @@ def parse_note(file_path: str):
 
 
 def load_all_markdown_files(directory):
-    all_files = {}
+    """
+    Iterates through all Markdown (.md) files in a specified directory and parses their contents.
+
+    Args:
+        directory (str): Path to the directory containing Markdown files.
+
+    Returns:
+        dict: A dictionary where each key is a Markdown file name, and its value is a parsed content
+              dictionary (output of parse_note) extended with a 'file_name' key .
+    """
+
+
+    all_files = []
 
 
     for file_name in os.listdir(directory):
+        
         file_path = os.path.join(directory, file_name)
-
         if os.path.isfile(file_path) and file_name.endswith(".md"):
             # with open(file_path, 'r', encoding='utf-8') as file:
                 file_content = parse_note(file_path)
-
-                all_files[file_name] = file_content
+                file_content["file_name"] = file_name
+                all_files.append(file_content)
+                
 
     return all_files
 
