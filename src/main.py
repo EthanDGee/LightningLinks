@@ -41,7 +41,7 @@ def extract_sentences(notes_list):
     return notes_sentences
 
 
-def find_min_from_indexes(indexes, row):
+def find_min_of_indexes(indexes, row):
     """
     given a set of indexes, find the index of the smallest value in the row
 
@@ -68,9 +68,16 @@ def get_top_n_similarities_from_row(row, num_similarities: int = 10):
     Returns:
         list: A list of indexes corresponding to the top n highest values in the row.
     """
+
+    if num_similarities >= len(row):
+        return list(range(0, len(row)))
+
+    if num_similarities == 0:
+        return []
+
     # create initial top_n from 0 to n-1
     top_n_indexes = list(range(num_similarities))
-    smallest_index = find_min_from_indexes(row[0:num_similarities])
+    smallest_index = find_min_of_indexes(top_n_indexes, row)
     smallest_value = row[smallest_index]
 
     # now we iterate through the remaining entries and continually swap out the smallest entry when we find a bigger entry
@@ -79,7 +86,7 @@ def get_top_n_similarities_from_row(row, num_similarities: int = 10):
             # swap out for the higher value
             top_n_indexes[smallest_index] = index
             # find new smallest
-            smallest_index = find_min(row)
+            smallest_index = find_min_of_indexes(top_n_indexes, row)
             smallest_value = row[smallest_index]
 
     return top_n_indexes

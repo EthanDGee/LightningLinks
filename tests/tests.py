@@ -56,8 +56,9 @@ class TestGetTopNSimilaritiesFromRow(unittest.TestCase):
     def test_empty_row(self):
         row = []
         num_similarities = 3
-        with self.assertRaises(IndexError):
-            get_top_n_similarities_from_row(row, num_similarities)
+        result = get_top_n_similarities_from_row(row, num_similarities)
+        expected = []
+        self.assertEqual(expected, result)
 
     def test_with_negative_values(self):
         row = [-1, -2, -3, -4, -5]
@@ -76,8 +77,10 @@ class TestGetTopNSimilaritiesFromRow(unittest.TestCase):
 
     def test_larger_num_similarities_than_row_length(self):
         row = [1, 2, 3]
+        expected = [0, 1, 2]
         num_similarities = 5
-        self.assertEqual(get_top_n_similarities_from_row(row, num_similarities), row)
+        result = get_top_n_similarities_from_row(row, num_similarities)
+        self.assertEqual(expected, result)
 
     def test_duplicate_values(self):
         row = [5, 5, 3, 3, 1, 1]
