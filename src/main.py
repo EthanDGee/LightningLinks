@@ -1,6 +1,5 @@
 import note_handler
 from sentence_transformers import SentenceTransformer
-from sentence_transformers.cross_encoder import CrossEncoder
 from time import time
 
 
@@ -148,10 +147,15 @@ if __name__ == "__main__":
     # find top n for each note
     top_n_similarities_indexes = get_all_top_n_similarities(encoded_sentences, 10)
 
+
+
     # append to file ends
     for i in range(len(top_n_similarities_indexes)):
         file_names = []
-        for similarity_index in top_n_similarities_indexes[i]:
-            file_names.append(notes[similarity_index]["file_name"])
+        notes[i]["similar_notes"] = []
 
-        note_handler.write_to_file(note_directory, notes[i], file_names)
+        for similarity_index in top_n_similarities_indexes[i]:
+            notes[i]["similar_notes"].append(notes[similarity_index]["file_name"])
+
+
+        note_handler.write_to_file(note_directory, notes[i])

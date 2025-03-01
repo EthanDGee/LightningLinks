@@ -114,7 +114,7 @@ def append_to_file(directory, file_path, file_names):
                 file.write(f"[[{file_name}]]\n")
 
 
-def write_to_file(directory, file_content, file_names):
+def write_to_file(directory, file_content):
     with open(f"{directory}{file_content['file_name']}", 'w', encoding='utf-8') as file:
         file.write(file_content["links"])
         file.write(file_content["tags"])
@@ -123,13 +123,13 @@ def write_to_file(directory, file_content, file_names):
         smart_links_header = "### Lightning Links"
 
         # remove self if there
-        file_names.remove(file_content['file_name'])
+        file_content["similar_notes"].remove(file_content['file_name'])
 
         # add header
         file.write(smart_links_header + "\n")
 
         # add all notes in one line
-        file.write(f"[[{"]] [[".join(file_names[:3])}]]".replace(".md", ""))
+        file.write(f"[[{"]] [[".join(file_content["similar_notes"][:3])}]]".replace(".md", ""))
 
         # add in line button field
         # inline_buttons_field = ",".join(file_names, ).replace(".md", "").replace(" ", "-")
