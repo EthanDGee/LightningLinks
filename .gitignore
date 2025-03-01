@@ -1,0 +1,10 @@
+_showyourwork.sqlite
+
+idea/QuickConnections.iml
+_showyourwork.sqlite
+
+.idea/*
+
+*.xml
+*.iml
+.venv/*
