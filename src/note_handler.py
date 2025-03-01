@@ -30,7 +30,7 @@ def parse_note(file_path: str):
         # Parse links (header section)
         while current_line:
             if current_line.startswith(LINK_START) and current_line.endswith(LINK_END + "\n"):
-                note_info["links"] += current_line[len(LINK_START):-len(LINK_END + "\n")] + "\n"
+                note_info["links"] += current_line
             else:
                 break  # Exit loop when we encounter a non-link line
             current_line = file.readline()
@@ -143,29 +143,6 @@ def write_to_file(directory, file_content):
         # add all notes in one line
         file.write(f"[[{"]] [[".join(file_content["similar_notes"][:3])}]]".replace(".md", ""))
 
-        # add in line button field
-        # inline_buttons_field = ",".join(file_names, ).replace(".md", "").replace(" ", "-")
-        # file.write(f"`BUTTON:[{inline_buttons_field}]`\n\n")
-
-        # for file_name in file_names:
-
-            # if file_name != file_content['file_name']:
-                # add it as a meta bind button
-                # file.write("\n")
-
-                # button_field = ["",
-                #                 f"```meta-bind-button",
-                #                 f"label: {file_name[:-2]}",
-                #                 f"id: {file_name.replace(".md", "").replace(" ", "-")}",
-                #                 f"hidden: true\n ",
-                #                 f"actions",
-                #                 f"\ttype: open",
-                #                 f"\tlink: {f'[[{file_name.replace('.md', '')}]]'}"
-                #                 f"```",
-                #                 ""]
-
-                # file.writelines(button_field)
-                # file.write("\n")
 
 
 
