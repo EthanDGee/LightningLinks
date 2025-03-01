@@ -1,4 +1,5 @@
 import os
+import json
 
 
 def parse_note(file_path: str):
@@ -144,5 +145,12 @@ def write_to_file(directory, file_content):
         file.write(f"[[{"]] [[".join(file_content["similar_notes"][:3])}]]".replace(".md", ""))
 
 
+def save_similar_notes(directory, notes):
+    similar_notes_dict = {note["file_name"]: note["similar_notes"] for note in notes}
+    with open(f"{directory}.obsidian/similar_notes.json", 'w', encoding='utf-8') as file:
+        json.dump(similar_notes_dict, file, indent=4)
 
-
+def load_similar_notes(directory):
+    with open(f"{directory}.obsidian/similar_notes.json", 'r', encoding='utf-8') as file:
+        similar_notes_dict = json.load(file)
+    return similar_notes_dict

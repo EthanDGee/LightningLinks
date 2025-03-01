@@ -124,8 +124,19 @@ if __name__ == "__main__":
     print("Loading Files...", end="")
     # get files
     note_directory = "../demoData/"
+    # note_directory = "C:/Users/ethan/SecondBrain/SecondBrain/" # use actual notes
     notes = note_handler.load_all_markdown_files(note_directory)
     print(f"\rFiles Loaded! {time() - start_time}")
+
+    # for note in notes:
+    #     # print(note)
+    #     print(f"links: {note['links']}")
+    #     print(f"tags: {note['tags']}")
+    #     print(f"body: {note['body']}")
+    #     print(f"smart_links: {note['smart_links']}")
+    #     print("--------"*6)
+
+
 
     # get sentences
     print("Extracting Sentences...", end="")
@@ -147,8 +158,6 @@ if __name__ == "__main__":
     # find top n for each note
     top_n_similarities_indexes = get_all_top_n_similarities(encoded_sentences, 10)
 
-
-
     # append to file ends
     for i in range(len(top_n_similarities_indexes)):
         file_names = []
@@ -159,3 +168,6 @@ if __name__ == "__main__":
 
 
         note_handler.write_to_file(note_directory, notes[i])
+
+    notes = note_handler.save_similar_notes(note_directory, notes)
+
