@@ -130,6 +130,7 @@ def append_to_file(directory, file_path, file_names):
 def write_to_file(directory, file_content):
     with open(f"{directory}{file_content['file_name']}", 'w', encoding='utf-8') as file:
         file.write(file_content["links"])
+        file.write("\n")
         file.write(file_content["tags"])
         file.write(file_content["body"])
 
@@ -154,3 +155,12 @@ def load_similar_notes(directory):
     with open(f"{directory}.obsidian/similar_notes.json", 'r', encoding='utf-8') as file:
         similar_notes_dict = json.load(file)
     return similar_notes_dict
+
+def get_last_open(directory):
+    with open(f"{directory}.obsidian/workspace.json", 'r', encoding='utf-8') as file:
+        last_open = json.load(file)
+
+    return last_open["lastOpenFiles"][0]
+
+if __name__ == "__main__":
+    print(get_last_open("../demoData/"))
