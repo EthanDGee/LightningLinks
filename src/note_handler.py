@@ -88,3 +88,30 @@ def load_all_markdown_files(directory):
             all_files.append(file_content)
 
     return all_files
+
+def append_to_file(file_path, file_names):
+    with open(file_path, 'rw', encoding='utf-8') as file:
+
+        SMART_LINKS_HEADER = "[//]: # (Smart Links)"
+
+        # go until SMART LINKS HEADER IS HIT
+
+        current_line = file.readline()
+        found_header = False
+        while current_line:
+            if current_line == SMART_LINKS_HEADER:
+                found_header = True
+                break
+            current_line = file.readline()
+
+        # now we are going to append the contents to the file
+        if not found_header:
+            file.write(SMART_LINKS_HEADER + "\n")
+
+        for file_name in file_names:
+            file.write(f"[[{file_name}]]\n")
+
+
+
+
+
