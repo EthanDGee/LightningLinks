@@ -1,13 +1,10 @@
 from openai import OpenAI
-from sympy.physics.units import temperature
-
 import note_handler
 import pydantic
 import os
 
 
 def parse_similar(directory, similar_notes):
-
     similar_notes_parsed = ""
 
     for note in similar_notes:
@@ -163,11 +160,40 @@ def suggest(directory):
         print("Please enter y or n")
 
     if user_input == "y":
-        prompt = f"create a note about {response.suggestion}"
-        f" making sure that it covers the topics covered in my reasoning {response.reasoning}",
+        prompt = f"create a note about {response.suggestion} making sure that it covers the topics covered in my reasoning {response.reasoning}",
         create(prompt, directory)
 
-
 if __name__ == "__main__":
-    openai.api_key = os.getenv("open_ai_key")
-    suggest('../demoData/')
+    print("Welcome to the Lightning Notes Assistant!")
+    print("The best way to find holes in your notes, and automagically create plugs to fill them")
+    print("To get started, please enter the directory where your notes are stored")
+    while True:
+        directory = input("Enter the directory path: ")
+        if not os.path.isdir(directory):
+            print("Error: The provided path is not a valid directory. Please try again.")
+        else:
+            break
+
+    print("\nExcellent! Now let's get started with introducing you to our tools:")
+    print("Currently, we have two tools:")
+    print(
+        "1. Suggest: This looks at the notes you've been looking at recently and suggests a topic that you might want to add to your notes.")
+    print("2. Create: This creates a new note based on the topic you suggest.")
+    print("\nTo get started, please enter the command you would like to use:")
+    while True:
+        print("\n\nAvailable commands:")
+        print("s: Suggest")
+        print("c: Create")
+        print("q: Quit")
+        command = input("Enter your choice (s/c/q): ").lower()
+        if command == 's':
+            suggest(directory)
+        if command == 'c':
+            create(input("Enter the topic you would like to create: "), directory)
+        if command == 'q':
+            break
+
+        if command not in ["s", "c", "q"]:
+            print("Invalid command. Please enter a valid command.")
+
+

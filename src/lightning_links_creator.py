@@ -1,7 +1,7 @@
 import note_handler
 from sentence_transformers import SentenceTransformer
 from time import time
-
+import os
 
 def find_similarities(model, sentences):
     """
@@ -119,12 +119,17 @@ def get_all_top_n_similarities(similarities, n: int = 10):
 
 
 if __name__ == "__main__":
-    start_time = time()
 
+    # get directory
+    while True:
+        note_directory = input("Enter the directory path: ")
+        if not os.path.isdir(note_directory):
+            print("Error: The provided path is not a valid directory. Please try again.")
+        else:
+            break
+
+    start_time = time()
     print("Loading Files...", end="")
-    # get files
-    note_directory = "../demoData/"
-    # note_directory = "C:/Users/ethan/SecondBrain/SecondBrain/" # use actual notes
     notes = note_handler.load_all_markdown_files(note_directory)
     print(f"\rFiles Loaded! {time() - start_time}")
 
@@ -171,3 +176,4 @@ if __name__ == "__main__":
 
     notes = note_handler.save_similar_notes(note_directory, notes)
 
+    print("UPDATED FILES")
