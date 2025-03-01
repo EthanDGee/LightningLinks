@@ -1,5 +1,5 @@
 import unittest
-from src.main import find_min_of_indexes, get_top_n_similarities_from_row, get_all_top_n_similarities
+from src.lightning_links_creator import find_min_of_indexes, get_top_n_similarities_from_row, get_all_top_n_similarities
 import torch
 
 
