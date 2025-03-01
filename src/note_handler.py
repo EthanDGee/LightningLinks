@@ -16,7 +16,7 @@ def parse_note(file_path: str):
             - 'smart_links': Smart Links section content (if any, otherwise empty string).
     """
     # Constants for better readability
-    SMART_LINKS_HEADER = "[//]: # (Smart Links)"
+    SMART_LINKS_HEADER = "### Lightning Links"
     LINK_START = "[["
     LINK_END = "]]"
 
@@ -41,7 +41,7 @@ def parse_note(file_path: str):
 
         while current_line:
             if current_line.startswith("#") and not current_line.startswith("# "):
-                note_info["tags"] += current_line.strip("\n")
+                note_info["tags"] += current_line
             else:
                 break
             current_line = file.readline()
@@ -51,14 +51,14 @@ def parse_note(file_path: str):
             if current_line.strip() == SMART_LINKS_HEADER:  # Stop when we reach the Smart Links section
                 current_line = file.readline()
                 break
-            note_info["body"] += current_line.strip("\n")
+            note_info["body"] += current_line
             current_line = file.readline()
 
         # Parse smart links (optional section at the end)
         while current_line:
             if not current_line.strip():  # Stop at the first empty line
                 break
-            note_info["smart_links"] += current_line.strip("\n")
+            note_info["smart_links"] += current_line
             current_line = file.readline()
 
     return note_info
@@ -89,17 +89,18 @@ def load_all_markdown_files(directory):
 
     return all_files
 
-def append_to_file(file_path, file_names):
-    with open(file_path, 'rw', encoding='utf-8') as file:
 
-        SMART_LINKS_HEADER = "[//]: # (Smart Links)"
+def append_to_file(directory, file_path, file_names):
+    with open(f"{directory}{file_path}", 'w+', encoding='utf-8') as file:
+
+        SMART_LINKS_HEADER = "### Lightning Links"
 
         # go until SMART LINKS HEADER IS HIT
 
         current_line = file.readline()
         found_header = False
         while current_line:
-            if current_line == SMART_LINKS_HEADER:
+            if current_line == SMART_LINKS_HEADER + "\n":
                 found_header = True
                 break
             current_line = file.readline()
@@ -109,9 +110,44 @@ def append_to_file(file_path, file_names):
             file.write(SMART_LINKS_HEADER + "\n")
 
         for file_name in file_names:
-            file.write(f"[[{file_name}]]\n")
+            if file_name != file_path:
+                file.write(f"[[{file_name}]]\n")
 
 
+def write_to_file(directory, file_content, file_names):
+    with open(f"{directory}{file_content['file_name']}", 'w', encoding='utf-8') as file:
+        file.write(file_content["links"])
+        file.write(file_content["tags"])
+        file.write(file_content["body"])
 
+        smart_links_header = "\n\n### Lightning Links"
 
+        # remove self if there
+        file_names.remove(file_content['file_name'])
 
+        # add header
+        file.write(smart_links_header + "\n")
+
+        # add in line button field
+        inline_buttons_field = ",".join(file_names, ).replace(".md", "").replace(" ", "-")
+        file.write(f"`BUTTON:[{inline_buttons_field}]`\n\n")
+
+        for file_name in file_names:
+            #
+            if file_name != file_content['file_name']:
+                # add it as a meta bind button
+                file.write("\n")
+
+                button_field = ["",
+                                f"```meta-bind-button",
+                                f"label: {file_name[:-2]}",
+                                f"id: {file_name.replace(".md", "").replace(" ", "-")}",
+                                f"hidden: true\n ",
+                                f"actions",
+                                f"\ttype: open",
+                                f"\tlink: {f'[[{file_name.replace('.md', '')}]]'}"
+                                f"```",
+                                ""]
+
+                file.writelines(button_field)
+                file.write("\n")

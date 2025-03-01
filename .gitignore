@@ -1,5 +1,5 @@
 *.sqlite
-
+demoData/*
 
 
 .venv/*

@@ -1,5 +1,6 @@
 import note_handler
 from sentence_transformers import SentenceTransformer
+from sentence_transformers.cross_encoder import CrossEncoder
 from time import time
 
 
@@ -18,10 +19,6 @@ def find_similarities(model, sentences):
 
     similarities = model.similarity(embedding, embedding)
     return similarities
-
-
-def find_cross_code_values():
-    pass
 
 
 def extract_sentences(notes_list):
@@ -44,7 +41,7 @@ def extract_sentences(notes_list):
 
 def find_min_of_indexes(indexes, row):
     """
-    given a set of indexes, find the index of the smallest value in the row
+    given a set of indexes, find the index of the smallest value in the row, as well as the index of the index in the indexes array
 
     """
     min_index = indexes[0]
@@ -150,8 +147,11 @@ if __name__ == "__main__":
     print(f"\rSentences Encoded! {time() - start_time}")
     # find top n for each note
     top_n_similarities_indexes = get_all_top_n_similarities(encoded_sentences, 10)
-    for i in range(len(top_n_similarities_indexes)):
-        print(f"Top Similarities for {i + 1} : {top_n_similarities_indexes[i]}")
-    # rerank
 
     # append to file ends
+    for i in range(len(top_n_similarities_indexes)):
+        file_names = []
+        for similarity_index in top_n_similarities_indexes[i]:
+            file_names.append(notes[similarity_index]["file_name"])
+
+        note_handler.write_to_file(note_directory, notes[i], file_names)
