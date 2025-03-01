@@ -79,16 +79,17 @@ def create(prompt, directory):
     parsed_return = completion.choices[0].message.parsed
 
     new_note = {
-        "file_name": parsed_return.file_name,
-        "links": parsed_return.links,
-        "tags": parsed_return.tags,
-        "body": parsed_return.body,
+        "file_name": f"{parsed_return.file_name}.md",
+        "links": f'{parsed_return.links}\n',
+        "tags": f'{parsed_return.tags}\n',
+        "body": f'{parsed_return.body}\n',
         "similar_notes": parsed_return.similar_notes
     }
 
     #
     note_handler.write_to_file(directory, new_note)
     print(f"Successfully created note: {new_note['file_name']}")
+
 
 if __name__ == "__main__":
     # openai.api_key = os.getenv("open_ai_key")
