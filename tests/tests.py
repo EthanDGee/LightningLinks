@@ -91,6 +91,7 @@ class TestGetTopNSimilaritiesFromRow(unittest.TestCase):
         expected = [0, 1, 2, 3]  # Indices of the top 4 values
         self.assertEqual(expected, result)
 
+
 class TestGetAllTopNSimilarities(unittest.TestCase):
 
     def test_get_all_top_n_similarities_basic(self):
@@ -152,6 +153,7 @@ class TestGetAllTopNSimilarities(unittest.TestCase):
             row.sort()
 
         self.assertEqual(expected, result)
+
 
 if __name__ == '__main__':
     unittest.main()
