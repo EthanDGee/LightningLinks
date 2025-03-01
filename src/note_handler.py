@@ -120,7 +120,7 @@ def write_to_file(directory, file_content, file_names):
         file.write(file_content["tags"])
         file.write(file_content["body"])
 
-        smart_links_header = "\n\n### Lightning Links"
+        smart_links_header = "### Lightning Links"
 
         # remove self if there
         file_names.remove(file_content['file_name'])
@@ -128,26 +128,32 @@ def write_to_file(directory, file_content, file_names):
         # add header
         file.write(smart_links_header + "\n")
 
+        # add all notes in one line
+        file.write(f"[[{"]] [[".join(file_names[:3])}]]".replace(".md", ""))
+
         # add in line button field
-        inline_buttons_field = ",".join(file_names, ).replace(".md", "").replace(" ", "-")
-        file.write(f"`BUTTON:[{inline_buttons_field}]`\n\n")
+        # inline_buttons_field = ",".join(file_names, ).replace(".md", "").replace(" ", "-")
+        # file.write(f"`BUTTON:[{inline_buttons_field}]`\n\n")
 
-        for file_name in file_names:
-            #
-            if file_name != file_content['file_name']:
+        # for file_name in file_names:
+
+            # if file_name != file_content['file_name']:
                 # add it as a meta bind button
-                file.write("\n")
+                # file.write("\n")
 
-                button_field = ["",
-                                f"```meta-bind-button",
-                                f"label: {file_name[:-2]}",
-                                f"id: {file_name.replace(".md", "").replace(" ", "-")}",
-                                f"hidden: true\n ",
-                                f"actions",
-                                f"\ttype: open",
-                                f"\tlink: {f'[[{file_name.replace('.md', '')}]]'}"
-                                f"```",
-                                ""]
+                # button_field = ["",
+                #                 f"```meta-bind-button",
+                #                 f"label: {file_name[:-2]}",
+                #                 f"id: {file_name.replace(".md", "").replace(" ", "-")}",
+                #                 f"hidden: true\n ",
+                #                 f"actions",
+                #                 f"\ttype: open",
+                #                 f"\tlink: {f'[[{file_name.replace('.md', '')}]]'}"
+                #                 f"```",
+                #                 ""]
 
-                file.writelines(button_field)
-                file.write("\n")
+                # file.writelines(button_field)
+                # file.write("\n")
+
+
+
