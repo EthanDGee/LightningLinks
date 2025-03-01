@@ -20,6 +20,9 @@ def find_similarities(model, sentences):
     return similarities
 
 
+def find_cross_code_values():
+    pass
+
 def extract_sentences(notes_list):
     """
     Extracts the body content (sentences) from a list of notes.
@@ -38,23 +41,21 @@ def extract_sentences(notes_list):
     return notes_sentences
 
 
-def find_min(row):
+def find_min_from_indexes(indexes, row):
     """
-    Finds the index of the minimum value in a given list or row.
+    given a set of indexes, find the index of the smallest value in the row
 
-    Args:
-        row (list): A list of numeric values.
-
-    Returns:
-        int: The index of the smallest element in the list.
     """
-    min_index = 0
-    for index in range(1, len(row)):
-        element = row[index]
-        if element < row[min_index]:
-            min_index = index
+    min_index = indexes[0]
+    min_value = row[min_index]
+
+    for i in range(1, len(indexes)):
+        current = row[indexes[i]]
+        if current < min_value:
+            min_index = indexes[i]
+            min_value = current
+
     return min_index
-
 
 def get_top_n_similarities_from_row(row, num_similarities: int = 10):
     """
@@ -68,12 +69,12 @@ def get_top_n_similarities_from_row(row, num_similarities: int = 10):
         list: A list of indexes corresponding to the top n highest values in the row.
     """
     # create initial top_n from 0 to n-1
-    top_n_indexes = row[0:num_similarities - 1]
-    smallest_index = find_min(row)
+    top_n_indexes = list(range(num_similarities))
+    smallest_index = find_min_from_indexes(row[0:num_similarities])
     smallest_value = row[smallest_index]
 
     # now we iterate through the remaining entries and continually swap out the smallest entry when we find a bigger entry
-    for index in len(num_similarities, len(row)):
+    for index in range(num_similarities, len(row)):
         if row[index] > smallest_value:
             # swap out for the higher value
             top_n_indexes[smallest_index] = index
@@ -134,7 +135,8 @@ if __name__ == "__main__":
     print(type(encoded_sentences))
     print(f"\rSentences Encoded! {time() - start_time}")
     # find top n for each note
-
+    top_n_similarities_indexes = get_all_top_n_similarities(encoded_sentences, 10)
+    print(top_n_similarities_indexes)
     # rerank
 
     # append to file ends
