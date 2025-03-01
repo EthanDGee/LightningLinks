@@ -65,13 +65,13 @@ def parse_note(file_path: str):
     return note_info
 
 def get_all_note_names(directory):
-    all_notes = []
+    all_notes = ""
 
     for file_name in os.listdir(directory):
 
         file_path = os.path.join(directory, file_name)
         if os.path.isfile(file_path) and file_name.endswith(".md"):
-            all_notes.append(f'[[{file_name.replace(".md", "")}]]')
+            all_notes += f'[[{file_name.replace(".md", "")}]]\n'
 
     return all_notes
 
@@ -137,7 +137,8 @@ def write_to_file(directory, file_content):
         smart_links_header = "### Lightning Links"
 
         # remove self if there
-        file_content["similar_notes"].remove(file_content['file_name'])
+        if file_content['file_name'] in file_content["similar_notes"]:
+            file_content["similar_notes"].remove(file_content['file_name'])
 
         # add header
         file.write(smart_links_header + "\n")

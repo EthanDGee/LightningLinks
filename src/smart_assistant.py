@@ -1,30 +1,44 @@
 from openai import OpenAI
+from torch.onnx.symbolic_opset9 import new_full
+
 import note_handler
 import pydantic
-
-def format_similar_notes()
+import os
 
 
 def create(prompt, directory):
     class NewFile(pydantic.BaseModel):
+        file_name: str
         links: str
         tags: str
         body: str
-        similar_notes: list
+        similar_notes: list[str]
 
-    client = OpenAI()
+    client = OpenAI(api_key=os.getenv("open_ai_key"))
 
     # get current note
-    current_note = note_handler.get_current_note()
+    current_note = note_handler.get_current_note(directory)
+
+    # get all available notes
+
+    available_note_names = note_handler.get_all_note_names(directory)
 
     # load similar
     similar_notes = note_handler.load_similar_notes(directory)
 
     # parse similar
-    similar_notes_parsed = []
+    similar_notes_parsed = ""
+
 
     for note in similar_notes:
-        similar_notes_parsed.append(note_handler.parse_note(f"{directory}{note}"))
+        # print(note)
+        current_similar = note_handler.parse_note(f"{directory}{note}")
+        similar_notes_parsed +="file_name: "  + note+ "\n"
+        similar_notes_parsed +="links: "  + current_similar['links'] + "\n"
+        similar_notes_parsed +="tags: "  + current_similar['tags'] + "\n"
+        similar_notes_parsed +="body: "  + current_similar['body'] + "\n"
+        similar_notes_parsed +="\n"
+
 
     # get all note names
     all_note_names = note_handler.get_all_note_names(directory)
@@ -49,7 +63,7 @@ def create(prompt, directory):
 
 
 
-    user_prompt = f""""""
+    user_prompt = f"""{prompt} \nSimilar Notes: \n{similar_notes_parsed} \n All Available Links\n {all_note_names}"""
 
 
     completion = client.beta.chat.completions.parse(
@@ -57,11 +71,25 @@ def create(prompt, directory):
         temperature=temperature,
         messages=[
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": note_content}
+            {"role": "user", "content": user_prompt}
         ],
         response_format=response_format,
     )
 
+    parsed_return = completion.choices[0].message.parsed
+
+    new_note = {
+        "file_name": parsed_return.file_name,
+        "links": parsed_return.links,
+        "tags": parsed_return.tags,
+        "body": parsed_return.body,
+        "similar_notes": parsed_return.similar_notes
+    }
+
+    #
     note_handler.write_to_file(directory, new_note)
+    print(f"Successfully created note: {new_note['file_name']}")
 
-
+if __name__ == "__main__":
+    # openai.api_key = os.getenv("open_ai_key")
+    create("create a note about user accessability", '../demoData/')
