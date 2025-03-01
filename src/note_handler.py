@@ -63,6 +63,18 @@ def parse_note(file_path: str):
 
     return note_info
 
+def get_all_notes(directory):
+    all_notes = []
+
+    for file_name in os.listdir(directory):
+
+        file_path = os.path.join(directory, file_name)
+        if os.path.isfile(file_path) and file_name.endswith(".md"):
+            all_notes.append(file_name)
+
+    return all_notes
+
+
 
 def load_all_markdown_files(directory):
     """
