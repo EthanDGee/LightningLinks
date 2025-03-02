@@ -120,13 +120,28 @@ def get_all_top_n_similarities(similarities, n: int = 10):
 
 if __name__ == "__main__":
 
+    arguments = os.sys.argv
+
+
     # get directory
-    while True:
-        note_directory = input("Enter the directory path: ")
-        if not os.path.isdir(note_directory):
-            print("Error: The provided path is not a valid directory. Please try again.")
-        else:
-            break
+
+    # argument mode
+    if len(arguments) > 1:
+        # arguments are to be passed in as
+        # python lightning_links_creator.py [dir]
+        note_directory = arguments[1]
+
+    else:
+        # get directory from user manually
+        while True:
+            note_directory = input("Enter the directory path: ")
+            if not os.path.isdir(note_directory):
+                print("Error: The provided path is not a valid directory. Please try again.")
+            else:
+                break
+
+
+
 
     start_time = time()
     print("Loading Files...", end="")
@@ -175,3 +190,4 @@ if __name__ == "__main__":
         note_handler.write_to_file(note_directory, notes[i])
 
     notes = note_handler.save_similar_notes(note_directory, notes)
+
