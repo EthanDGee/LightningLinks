@@ -64,6 +64,7 @@ def parse_note(file_path: str):
 
     return note_info
 
+
 def get_all_note_names(directory):
     all_notes = ""
 
@@ -74,7 +75,6 @@ def get_all_note_names(directory):
             all_notes += f'[[{file_name.replace(".md", "")}]]\n'
 
     return all_notes
-
 
 
 def load_all_markdown_files(directory):
@@ -127,7 +127,7 @@ def append_to_file(directory, file_path, file_names):
                 file.write(f"[[{file_name}]]\n")
 
 
-def write_to_file(directory, file_content):
+def write_to_file(directory, file_content, num_lightning_links):
     with open(f"{directory}{file_content['file_name']}", 'w', encoding='utf-8') as file:
         file.write(file_content["links"])
         file.write("\n")
@@ -144,7 +144,7 @@ def write_to_file(directory, file_content):
         file.write(smart_links_header + "\n")
 
         # add all notes in one line
-        file.write(f"[[{"]] [[".join(file_content["similar_notes"][:3])}]]".replace(".md", ""))
+        file.write(f"[[{"]] [[".join(file_content["similar_notes"][:num_lightning_links])}]]".replace(".md", ""))
 
 
 def save_similar_notes(directory, notes):
@@ -152,10 +152,12 @@ def save_similar_notes(directory, notes):
     with open(f"{directory}.obsidian/similar_notes.json", 'w', encoding='utf-8') as file:
         json.dump(similar_notes_dict, file, indent=4)
 
+
 def load_similar_notes(directory):
     with open(f"{directory}.obsidian/similar_notes.json", 'r', encoding='utf-8') as file:
         similar_notes_dict = json.load(file)
     return similar_notes_dict
+
 
 def get_current_note(directory):
     with open(f"{directory}.obsidian/workspace.json", 'r', encoding='utf-8') as file:
