@@ -2,6 +2,7 @@ from openai import OpenAI
 import note_handler
 import pydantic
 import os
+import torch
 
 
 def parse_similar(directory, similar_notes):
@@ -47,7 +48,7 @@ def create(prompt, directory):
     all_note_names = note_handler.get_all_note_names(directory)
 
     # ask open AI for structured output that matches newFile
-    model = 'gpt-4o'
+    model = "gpt-4o-mini"
     response_format = NewFile
     temperature = 0.5
 
@@ -134,7 +135,7 @@ def suggest(directory):
 
     # request
     client = OpenAI(api_key=os.getenv("open_ai_key"))
-    model = 'gpt-4o'
+    model = "gpt-4o-mini"
     completion = client.beta.chat.completions.parse(
         model=model,
         temperature=temperature,
@@ -164,6 +165,9 @@ def suggest(directory):
         create(prompt, directory)
 
 if __name__ == "__main__":
+
+    print(torch.cuda.is_available())
+
     print("Welcome to the Lightning Notes Assistant!")
     print("The best way to find holes in your notes, and automagically create plugs to fill them")
     print("To get started, please enter the directory where your notes are stored")
