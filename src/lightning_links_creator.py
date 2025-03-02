@@ -140,6 +140,21 @@ if __name__ == "__main__":
             else:
                 break
 
+    # number of similar notes
+
+    if len(arguments) > 2:
+        similar_count = int(arguments[2])
+    else:
+        similar_count = 10
+
+    # count lightning links
+
+    if len(arguments) > 3:
+        lightning_links_count = int(arguments[3])
+    else:
+        lightning_links_count = 3
+
+
 
 
 
@@ -147,14 +162,6 @@ if __name__ == "__main__":
     print("Loading Files...", end="")
     notes = note_handler.load_all_markdown_files(note_directory)
     print(f"\rFiles Loaded! {time() - start_time}")
-
-    # for note in notes:
-    #     # print(note)
-    #     print(f"links: {note['links']}")
-    #     print(f"tags: {note['tags']}")
-    #     print(f"body: {note['body']}")
-    #     print(f"smart_links: {note['smart_links']}")
-    #     print("--------"*6)
 
 
 
@@ -176,7 +183,7 @@ if __name__ == "__main__":
     print(type(encoded_sentences))
     print(f"\rSentences Encoded! {time() - start_time}")
     # find top n for each note
-    top_n_similarities_indexes = get_all_top_n_similarities(encoded_sentences, 10)
+    top_n_similarities_indexes = get_all_top_n_similarities(encoded_sentences, similar_count)
 
     # append to file ends
     for i in range(len(top_n_similarities_indexes)):
@@ -187,7 +194,7 @@ if __name__ == "__main__":
             notes[i]["similar_notes"].append(notes[similarity_index]["file_name"])
 
 
-        note_handler.write_to_file(note_directory, notes[i])
+        note_handler.write_to_file(note_directory, notes[i], lightning_links_count)
 
     notes = note_handler.save_similar_notes(note_directory, notes)
 
