@@ -122,7 +122,6 @@ if __name__ == "__main__":
 
     arguments = os.sys.argv
 
-
     # get directory
 
     # argument mode
@@ -155,7 +154,8 @@ if __name__ == "__main__":
         lightning_links_count = 3
 
 
-
+    # Ensure correct formatting
+    note_handler.ensure_trailing_empty_line(note_directory)
 
 
     start_time = time()

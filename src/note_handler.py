@@ -1,6 +1,32 @@
 import os
 import json
 
+def ensure_trailing_empty_line(directory):
+    """
+    Scans all .md files in the specified directory,
+    ensures each file ends with an empty line.
+    """
+    print("Ensuring files end with an empty line...")
+
+    files_updated = 0
+    for filename in os.listdir(directory):
+        if filename.endswith(".md") and not filename.endswith(".excalidraw.md"):  # Process Markdown files only
+            file_path = os.path.join(directory, filename)
+
+            # Read the file's contents
+            with open(file_path, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+
+            # Check if the file does not end with an empty line
+            if len(lines) != 0 and not lines[-1].strip() == "":
+                print(f"Updated {filename}")
+                files_updated += 1
+                # Append an empty line
+                with open(file_path, 'a', encoding='utf-8') as file:
+                    file.write("\n")
+
+
+    print(f"Updated {files_updated} files to fit conventions.")
 
 def parse_note(file_path: str):
     """
@@ -94,7 +120,7 @@ def load_all_markdown_files(directory):
     for file_name in os.listdir(directory):
 
         file_path = os.path.join(directory, file_name)
-        if os.path.isfile(file_path) and file_name.endswith(".md"):
+        if os.path.isfile(file_path) and file_name.endswith(".md") and not file_name.endswith(".excalidraw.md"):
             # with open(file_path, 'r', encoding='utf-8') as file:
             file_content = parse_note(file_path)
             file_content["file_name"] = file_name
@@ -144,7 +170,7 @@ def write_to_file(directory, file_content, num_lightning_links):
         file.write(smart_links_header + "\n")
 
         # add all notes in one line
-        file.write(f"[[{"]] [[".join(file_content["similar_notes"][:num_lightning_links])}]]".replace(".md", ""))
+        file.write(f"[[{"]] [[".join(file_content["similar_notes"][:num_lightning_links + 1])}]]".replace(".md", ""))
 
 
 def save_similar_notes(directory, notes):
@@ -164,3 +190,9 @@ def get_current_note(directory):
         last_open = json.load(file)
 
     return last_open["lastOpenFiles"][0]
+
+
+if __name__ == "__main__":
+    directory = "C:/Users/ethan/SecondBrain/SecondBrain/"
+    ensure_trailing_empty_line(directory)
+
