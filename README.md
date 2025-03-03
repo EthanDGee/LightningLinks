@@ -86,8 +86,8 @@ pip install -r requirements.txt
 2. **Analyze Similarities**:
     - Embeds your notes using sentence transformers to find out what you're really talking about.
     - Using algorithms based on Natural Language Processing (NLP), Lightning Links then determines the most relevant
-      notes
-      for each file, and saves it to your `.obsidian` folder so the smart assistant doesn't need to reindex them. By default this is set to 10, but you can do more, for higher accuracy at the cost of higher api usage fees. To customize look at Advanced Use
+      notes for each file, and saves it to your `.obsidian` folder so the smart assistant doesn't need to reindex them. 
+    - By default, this is set to 10, but you can do more, for higher accuracy at the cost of higher api usage fees. To customize look at Advanced Use
 
 3. **Append Relevant Links**:
     - A "Lightning links section" section is then appended at the **bottom** of every note, making it easy to see which
