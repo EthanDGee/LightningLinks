@@ -1,6 +1,15 @@
 import os
 import json
 
+
+# final variables
+NOTE_EXTENSION = ".md"
+EXCLUSIVE_EXTENSION = ".excalidraw.md"
+LIGHTNING_LINKS_HEADER = "### Lightning Links"
+ENCODING  = 'utf-8'
+LINK_START = "[["
+LINK_END = "]]"
+
 def ensure_trailing_empty_line(directory):
     """
     Ensures proper formatting of Markdown files in the specified directory. This function checks if the Markdown
@@ -15,15 +24,13 @@ def ensure_trailing_empty_line(directory):
     """
     print("Ensuring formatting of files...")
 
-    LIGHTNING_LINKS_HEADER = "### Lightning Links"
-
     files_updated = 0
     for filename in os.listdir(directory):
-        if filename.endswith(".md") and not filename.endswith(".excalidraw.md"):  # Process Markdown files only
+        if filename.endswith(NOTE_EXTENSION) and not filename.endswith(EXCLUSIVE_EXTENSION):  # Process Markdown files only
             file_path = os.path.join(directory, filename)
 
             # Read the file's contents
-            with open(file_path, 'r', encoding='utf-8') as file:
+            with open(file_path, 'r', encoding=ENCODING) as file:
                 lines = file.readlines()
 
             # Check if the file is not empty and does not end with an empty line, or if its already formatted
@@ -31,7 +38,7 @@ def ensure_trailing_empty_line(directory):
                 print(f"Updated {filename}")
                 files_updated += 1
                 # Append an empty line
-                with open(file_path, 'a', encoding='utf-8') as file:
+                with open(file_path, 'a', encoding=ENCODING) as file:
                     file.write("\n")
 
 
@@ -52,15 +59,13 @@ def parse_note(file_path: str):
             - 'smart_links': Smart Links section content (if any, otherwise empty string).
     """
     # Constants for better readability
-    LIGHTNING_LINKS_HEADER = "### Lightning Links"
-    LINK_START = "[["
-    LINK_END = "]]"
+
 
     # Dictionary to store the parsed note content
     note_info = {"links": "", "tags": "", "body": "", "smart_links": ""}
 
     # Open the file and iterate through its contents
-    with open(file_path, 'r', encoding='utf-8') as file:
+    with open(file_path, 'r', encoding=ENCODING) as file:
         current_line = file.readline()
 
         # Parse links (header section)
@@ -106,7 +111,7 @@ def get_all_note_names(directory):
 
     This function iterates over all files in the specified directory, identifies
     Markdown files by their extension, and appends the names of these files
-    (without the ".md" extension) to a string. Each note name is formatted and
+    (without the NOTE_EXTENSION extension) to a string. Each note name is formatted and
     separated by a newline in the returned string.
 
     :param directory: The path to the directory containing the note files.
@@ -123,8 +128,8 @@ def get_all_note_names(directory):
     for file_name in os.listdir(directory):
 
         file_path = os.path.join(directory, file_name)
-        if os.path.isfile(file_path) and file_name.endswith(".md"):
-            all_notes += f'[[{file_name.replace(".md", "")}]]\n'
+        if os.path.isfile(file_path) and file_name.endswith(NOTE_EXTENSION):
+            all_notes += f'{LINK_START}{file_name.replace(NOTE_EXTENSION, "")}{LINK_END}\n'
 
     return all_notes
 
@@ -146,8 +151,8 @@ def load_all_markdown_files(directory):
     for file_name in os.listdir(directory):
 
         file_path = os.path.join(directory, file_name)
-        if os.path.isfile(file_path) and file_name.endswith(".md") and not file_name.endswith(".excalidraw.md"):
-            # with open(file_path, 'r', encoding='utf-8') as file:
+        if os.path.isfile(file_path) and file_name.endswith(NOTE_EXTENSION) and not file_name.endswith(EXCLUSIVE_EXTENSION):
+            # with open(file_path, 'r', encoding=ENCODING) as file:
             file_content = parse_note(file_path)
             file_content["file_name"] = file_name
             all_files.append(file_content)
@@ -178,23 +183,22 @@ def write_to_file(directory, file_content, num_lightning_links):
     :type num_lightning_links: int
     :return: None
     """
-    with open(f"{directory}{file_content['file_name']}", 'w', encoding='utf-8') as file:
+    with open(f"{directory}{file_content['file_name']}", 'w', encoding=ENCODING) as file:
         file.write(file_content["links"])
         file.write("\n")
         file.write(file_content["tags"])
         file.write(file_content["body"])
 
-        smart_links_header = "### Lightning Links"
 
         # remove self if there
         if file_content['file_name'] in file_content["similar_notes"]:
             file_content["similar_notes"].remove(file_content['file_name'])
 
         # add header
-        file.write(smart_links_header + "\n")
+        file.write(LIGHTNING_LINKS_HEADER + "\n")
 
         # add all notes in one line
-        file.write(f"[[{"]]     [[".join(file_content["similar_notes"][:num_lightning_links])}]]".replace(".md", ""))
+        file.write(f"{LINK_START}{f"{LINK_START}     {LINK_END}".join(file_content["similar_notes"][:num_lightning_links])}{LINK_END}".replace(NOTE_EXTENSION, ""))
 
 
 def save_similar_notes(directory, notes):
@@ -212,11 +216,9 @@ def save_similar_notes(directory, notes):
                   should contain `file_name` (str) and `similar_notes` (list) fields.
     :type notes: list[dict]
 
-    :return: None
-    :rtype: None
     """
     similar_notes_dict = {note["file_name"]: note["similar_notes"] for note in notes}
-    with open(f"{directory}.obsidian/similar_notes.json", 'w', encoding='utf-8') as file:
+    with open(f"{directory}.obsidian/similar_notes.json", 'w', encoding=ENCODING) as file:
         json.dump(similar_notes_dict, file, indent=4)
 
 
@@ -233,7 +235,7 @@ def load_similar_notes(directory):
     :return: A dictionary representing the contents of the `similar_notes.json` file.
     :rtype: dict
     """
-    with open(f"{directory}.obsidian/similar_notes.json", 'r', encoding='utf-8') as file:
+    with open(f"{directory}.obsidian/similar_notes.json", 'r', encoding=ENCODING) as file:
         similar_notes_dict = json.load(file)
     return similar_notes_dict
 
@@ -258,7 +260,7 @@ def get_current_note(directory):
     :raises KeyError: If the "lastOpenFiles" key is not found in the loaded JSON
         data.
     """
-    with open(f"{directory}.obsidian/workspace.json", 'r', encoding='utf-8') as file:
+    with open(f"{directory}.obsidian/workspace.json", 'r', encoding=ENCODING) as file:
         last_open = json.load(file)
 
     return last_open["lastOpenFiles"][0]
