@@ -10,24 +10,24 @@ ENCODING  = 'utf-8'
 LINK_START = "[["
 LINK_END = "]]"
 
-def ensure_trailing_empty_line(directory):
+def ensure_proper_endings(notes_directory):
     """
-    Ensures proper formatting of Markdown files in the specified directory. This function checks if the Markdown
-    files in the directory end properly with an empty line so that if they don't have existing lightning links
+    Ensures proper formatting of Markdown files in the specified notes_directory. This function checks if the Markdown
+    files in the notes_directory end properly with an empty line so that if they don't have existing lightning links
     sections in the notes there will be a proper place for them. If the formatting conditions are not met, it appends a
     trailing empty line to the file.
 
-    :param directory: The directory path where the Markdown files are located.
-    :type directory: str
+    :param notes_directory: The notes_directory path where the Markdown files are located.
+    :type notes_directory: str
 
     :return: None
     """
     print("Ensuring formatting of files...")
 
     files_updated = 0
-    for filename in os.listdir(directory):
+    for filename in os.listdir(notes_directory):
         if filename.endswith(NOTE_EXTENSION) and not filename.endswith(EXCLUSIVE_EXTENSION):  # Process Markdown files only
-            file_path = os.path.join(directory, filename)
+            file_path = os.path.join(notes_directory, filename)
 
             # Read the file's contents
             with open(file_path, 'r', encoding=ENCODING) as file:
@@ -105,41 +105,41 @@ def parse_note(file_path: str):
     return note_info
 
 
-def get_all_note_names(directory):
+def get_all_note_names(notes_directory):
     """
-    Retrieve all note names from a directory containing Markdown (.md) files.
+    Retrieve all note names from a notes_directory containing Markdown (.md) files.
 
-    This function iterates over all files in the specified directory, identifies
+    This function iterates over all files in the specified notes_directory, identifies
     Markdown files by their extension, and appends the names of these files
     (without the NOTE_EXTENSION extension) to a string. Each note name is formatted and
     separated by a newline in the returned string.
 
-    :param directory: The path to the directory containing the note files.
-        Expected to be a string representing a valid directory path.
-    :type directory: str
+    :param notes_directory: The path to the notes_directory containing the note files.
+        Expected to be a string representing a valid notes_directory path.
+    :type notes_directory: str
 
     :return: A string containing formatted names of all Markdown note files in
-        the directory. Each name is enclosed in double brackets `[[ ]]` and
+        the notes_directory. Each name is enclosed in double brackets `[[ ]]` and
         separated by a newline.
     :rtype: str
     """
     all_notes = ""
 
-    for file_name in os.listdir(directory):
+    for file_name in os.listdir(notes_directory):
 
-        file_path = os.path.join(directory, file_name)
+        file_path = os.path.join(notes_directory, file_name)
         if os.path.isfile(file_path) and file_name.endswith(NOTE_EXTENSION):
             all_notes += f'{LINK_START}{file_name.replace(NOTE_EXTENSION, "")}{LINK_END}\n'
 
     return all_notes
 
 
-def load_all_markdown_files(directory):
+def load_all_markdown_files(notes_directory):
     """
-    Iterates through all Markdown (.md) files in a specified directory and parses their contents.
+    Iterates through all Markdown (.md) files in a specified notes_directory and parses their contents.
 
     Args:
-        directory (str): Path to the directory containing Markdown files.
+        notes_directory (str): Path to the notes_directory containing Markdown files.
 
     Returns:
         dict: A dictionary where each key is a Markdown file name, and its value is a parsed content
@@ -148,9 +148,9 @@ def load_all_markdown_files(directory):
 
     all_files = []
 
-    for file_name in os.listdir(directory):
+    for file_name in os.listdir(notes_directory):
 
-        file_path = os.path.join(directory, file_name)
+        file_path = os.path.join(notes_directory, file_name)
         if os.path.isfile(file_path) and file_name.endswith(NOTE_EXTENSION) and not file_name.endswith(EXCLUSIVE_EXTENSION):
             # with open(file_path, 'r', encoding=ENCODING) as file:
             file_content = parse_note(file_path)
@@ -161,14 +161,14 @@ def load_all_markdown_files(directory):
 
 
 
-def write_to_file(directory, file_content, num_lightning_links):
+def write_to_file(notes_directory, file_content, num_lightning_links):
     """
-    Writes content to a specified file in the given directory, appending formatted
+    Writes content to a specified file in the given notes_directory, appending formatted
     links and tags, and incorporating a specified number of "lightning links"
     based on a list of similar notes.
 
-    :param directory: The directory path where the file will be created or overwritten.
-    :type directory: str
+    :param notes_directory: The notes_directory path where the file will be created or overwritten.
+    :type notes_directory: str
     :param file_content: A dictionary containing the content to be written to the file.
         It is expected to have the following keys:
             - "file_name" (str): Name of the target file.
@@ -183,7 +183,7 @@ def write_to_file(directory, file_content, num_lightning_links):
     :type num_lightning_links: int
     :return: None
     """
-    with open(f"{directory}{file_content['file_name']}", 'w', encoding=ENCODING) as file:
+    with open(f"{notes_directory}{file_content['file_name']}", 'w', encoding=ENCODING) as file:
         file.write(file_content["links"])
         file.write("\n")
         file.write(file_content["tags"])
@@ -201,16 +201,16 @@ def write_to_file(directory, file_content, num_lightning_links):
         file.write(f"{LINK_START}{f"{LINK_START}     {LINK_END}".join(file_content["similar_notes"][:num_lightning_links])}{LINK_END}".replace(NOTE_EXTENSION, ""))
 
 
-def save_similar_notes(directory, notes):
+def save_similar_notes(notes_directory, notes):
     """
-    Saves the mapping of similar notes to a JSON file in the specified notes directory.
+    Saves the mapping of similar notes to a JSON file in the specified notes notes_directory.
     This function takes a list of notes where each note is expected to have a file name
     and its corresponding list of similar notes. It then creates a dictionary mapping
     each note's file name to its similar notes and writes this dictionary into a JSON
-    file named `similar_notes.json` inside a specified directory.
+    file named `similar_notes.json` inside a specified notes_directory.
 
-    :param directory: The path to the directory where the JSON file should be saved.
-    :type directory: str
+    :param notes_directory: The path to the notes_directory where the JSON file should be saved.
+    :type notes_directory: str
 
     :param notes: A list of dictionaries, where each dictionary represents a note and
                   should contain `file_name` (str) and `similar_notes` (list) fields.
@@ -218,39 +218,39 @@ def save_similar_notes(directory, notes):
 
     """
     similar_notes_dict = {note["file_name"]: note["similar_notes"] for note in notes}
-    with open(f"{directory}.obsidian/similar_notes.json", 'w', encoding=ENCODING) as file:
+    with open(f"{notes_directory}.obsidian/similar_notes.json", 'w', encoding=ENCODING) as file:
         json.dump(similar_notes_dict, file, indent=4)
 
 
-def load_similar_notes(directory):
+def load_similar_notes(notes_directory):
     """
-    Loads a JSON file containing similar notes from the given notes directory and
+    Loads a JSON file containing similar notes from the given notes notes_directory and
     returns its content as a dictionary. The file is expected to be located
-    within the `.obsidian` subfolder of the specified directory and named
+    within the `.obsidian` subfolder of the specified notes_directory and named
     `similar_notes.json`.
 
-    :param directory: The path to the directory containing the `.obsidian` folder
+    :param notes_directory: The path to the notes_directory containing the `.obsidian` folder
         with the `similar_notes.json` file.
-    :type directory: str
+    :type notes_directory: str
     :return: A dictionary representing the contents of the `similar_notes.json` file.
     :rtype: dict
     """
-    with open(f"{directory}.obsidian/similar_notes.json", 'r', encoding=ENCODING) as file:
+    with open(f"{notes_directory}.obsidian/similar_notes.json", 'r', encoding=ENCODING) as file:
         similar_notes_dict = json.load(file)
     return similar_notes_dict
 
 
-def get_current_note(directory):
+def get_current_note(notes_directory):
     """
     Fetches the most recently opened note file in an Obsidian workspace.
 
-    This function reads the `workspace.json` file within the specified notes directory
+    This function reads the `workspace.json` file within the specified notes notes_directory
     to determine the most recently accessed note in the Obsidian workspace. It
     parses the JSON data to extract the value from the "lastOpenFiles" key.
 
-    :param directory: The directory path containing the Obsidian `.obsidian`
+    :param notes_directory: The notes_directory path containing the Obsidian `.obsidian`
         folder.
-    :type directory: str
+    :type notes_directory: str
     :return: The path to the most recently opened note.
     :rtype: str
     :raises FileNotFoundError: If the `workspace.json` file does not exist at
@@ -260,13 +260,13 @@ def get_current_note(directory):
     :raises KeyError: If the "lastOpenFiles" key is not found in the loaded JSON
         data.
     """
-    with open(f"{directory}.obsidian/workspace.json", 'r', encoding=ENCODING) as file:
+    with open(f"{notes_directory}.obsidian/workspace.json", 'r', encoding=ENCODING) as file:
         last_open = json.load(file)
 
     return last_open["lastOpenFiles"][0]
 
 
 if __name__ == "__main__":
-    directory = "C:/Users/ethan/SecondBrain/SecondBrain/"
-    ensure_trailing_empty_line(directory)
+    notes_directory = "C:/Users/ethan/SecondBrain/SecondBrain/"
+    ensure_proper_endings(notes_directory)
 

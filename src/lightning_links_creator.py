@@ -75,14 +75,14 @@ def find_min_of_indexes(indexes, row):
 
 def get_top_n_similarities_from_row(row, num_similarities: int = 10):
     """
-    Retrieves the indexes of the top n highest values in a given row.
+    Retrieves the indexes of the top 'num_similarities' of highest values in a given row.
 
     Args:
         row (list): A list of numeric values.
         num_similarities (int, optional): The number of top values to retrieve. Defaults to 10.
 
     Returns:
-        list: A list of indexes corresponding to the top n highest values in the row.
+        list: A list of indexes corresponding to the top 'num_similarities' of the highest values in the row.
     """
 
     if num_similarities >= len(row):
@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
 
     # Ensure correct formatting
-    note_handler.ensure_trailing_empty_line(note_directory)
+    note_handler.ensure_proper_endings(note_directory)
 
 
     start_time = time()

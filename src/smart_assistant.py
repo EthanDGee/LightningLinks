@@ -5,15 +5,15 @@ import os
 import torch
 
 
-def parse_similar(directory, similar_notes):
+def parse_similar(notes_directory, similar_notes):
     """
     Parses a list of similar note files within a provided directory and generates
     a formatted string containing details such as the file name, links, tags, and
     body content of each note. This function processes the notes by leveraging
     a parsing utility from the `note_handler` module.
 
-    :param directory: Location of the directory containing the note files.
-    :type directory: str
+    :param notes_directory: Location of the directory containing the note files.
+    :type notes_directory: str
     :param similar_notes: List of note file names to be parsed.
     :type similar_notes: list[str]
     :return: A formatted string containing details of the parsed similar notes.
@@ -23,7 +23,7 @@ def parse_similar(directory, similar_notes):
 
     for note in similar_notes:
         # print(note)
-        current_similar = note_handler.parse_note(f"{directory}{note}")
+        current_similar = note_handler.parse_note(f"{notes_directory}{note}")
         similar_notes_parsed += "file_name: " + note + "\n"
         similar_notes_parsed += "links: " + current_similar['links'] + "\n"
         similar_notes_parsed += "tags: " + current_similar['tags'] + "\n"
@@ -33,7 +33,7 @@ def parse_similar(directory, similar_notes):
     return similar_notes_parsed
 
 
-def create(prompt, directory):
+def create(prompt, notes_directory):
     """
     Creates a new note based on the given user prompt pulling from relevant
     existing notes in the specified directory. This function uses OpenAI's
@@ -44,9 +44,9 @@ def create(prompt, directory):
     :param prompt: The main user input that specifies the content or context for
         the note to be created.
     :type prompt: str
-    :param directory: The directory path where the current and new notes are or
+    :param notes_directory: The directory path where the current and new notes are or
         will be stored, including any similar note references.
-    :type directory: str
+    :type notes_directory: str
     :return: None
     """
     print("Creating new note: \n")
@@ -59,10 +59,10 @@ def create(prompt, directory):
         similar_notes: list[str]
 
     # get current note
-    current_note = note_handler.get_current_note(directory)
+    current_note = note_handler.get_current_note(notes_directory)
 
     # load similar
-    similar_notes_dictionary = note_handler.load_similar_notes(directory)
+    similar_notes_dictionary = note_handler.load_similar_notes(notes_directory)
 
     similar_notes = similar_notes_dictionary[current_note]
 
@@ -70,10 +70,10 @@ def create(prompt, directory):
 
     # parse similar
 
-    similar_notes_parsed = parse_similar(directory, similar_notes)
+    similar_notes_parsed = parse_similar(notes_directory, similar_notes)
 
     # get all note names
-    all_note_names = note_handler.get_all_note_names(directory)
+    all_note_names = note_handler.get_all_note_names(notes_directory)
 
     # ask open AI for structured output that matches newFile
     model = "gpt-4o-mini"
@@ -119,11 +119,11 @@ def create(prompt, directory):
     }
 
     # save note using note_handler.write_note
-    note_handler.write_to_file(directory, new_note)
+    note_handler.write_to_file(notes_directory, new_note, 3)
     print(f"Successfully created note: {new_note['file_name']}")
 
 
-def suggest(directory):
+def suggest(notes_directory):
     """
     Suggests a new note topic based on the provided directory containing existing notes and their
     metadata. The suggestion is derived by analyzing similar notes, parsed content, and the overall
@@ -131,8 +131,8 @@ def suggest(directory):
     open AIs structured output to generate a structured response that adheres to the `ExpectedResponse`
     with data about the suggested topic and a reasoning for the suggestion.
 
-    :param directory: The directory containing the existing notes and metadata.
-    :type directory: str
+    :param notes_directory: The directory containing the existing notes and metadata.
+    :type notes_directory: str
 
     :return: None
     """
@@ -140,19 +140,19 @@ def suggest(directory):
         suggestion: str
         reasoning: str
 
-    current_note = note_handler.get_current_note(directory)
+    current_note = note_handler.get_current_note(notes_directory)
 
     # load similar
-    similar_notes_dictionary = note_handler.load_similar_notes(directory)
+    similar_notes_dictionary = note_handler.load_similar_notes(notes_directory)
 
     similar_notes = similar_notes_dictionary[current_note]
 
     similar_notes.append(current_note)
 
     # parse similar
-    similar_notes_parsed = parse_similar(directory, similar_notes)
+    similar_notes_parsed = parse_similar(notes_directory, similar_notes)
 
-    all_note_names = note_handler.get_all_note_names(directory)
+    all_note_names = note_handler.get_all_note_names(notes_directory)
     temperature = 0.5
 
     system_prompt = """
@@ -191,7 +191,6 @@ def suggest(directory):
     print(f"Looking at your notes it seems best to create a note about {response.suggestion}")
     print("Here's why I think you should: \n" + response.reasoning + "\n")
 
-    user_input = ""
     question = "Would you like to create this note? (y/n)"
     while True:
         print(question)
@@ -201,8 +200,8 @@ def suggest(directory):
         print("Please enter y or n")
 
     if user_input == "y":
-        prompt = f"create a note about {response.suggestion}",
-        create(prompt, directory)
+        prompt = f"create a note about {response.suggestion}"
+        create(prompt, notes_directory)
 
 
 if __name__ == "__main__":
