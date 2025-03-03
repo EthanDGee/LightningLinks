@@ -3,6 +3,7 @@ from sentence_transformers import SentenceTransformer
 from time import time
 import os
 
+
 def find_similarities(model, sentences):
     """
     Computes the similarity scores between all pairs of given sentences using the provided model.
@@ -133,12 +134,12 @@ def get_all_top_n_similarities(similarities, n: int = 10):
 
     return top_n_indexes_table
 
+
 def update_notes_with_similarities(notes, note_directory, top_n_similarities_indexes, lightning_links_count):
     """Update notes with top N similarities and save them."""
     for i, similarity_indexes in enumerate(top_n_similarities_indexes):
         notes[i]["similar_notes"] = [notes[sim_idx]["file_name"] for sim_idx in similarity_indexes]
         note_handler.write_to_file(note_directory, notes[i], lightning_links_count)
-
 
 
 if __name__ == "__main__":
@@ -176,17 +177,13 @@ if __name__ == "__main__":
     else:
         lightning_links_count = 3
 
-
     # Ensure correct formatting
     note_handler.ensure_proper_endings(note_directory)
-
 
     start_time = time()
     print("Loading Files...", end="")
     notes = note_handler.load_all_markdown_files(note_directory)
     print(f"\rFiles Loaded! {time() - start_time}")
-
-
 
     # get sentences
     print("Extracting Sentences...", end="")
@@ -214,6 +211,5 @@ if __name__ == "__main__":
     print(f"\rLightning Links Updated! {time() - start_time}")
     print("Saving Similarities...", end="")
     notes = note_handler.save_similar_notes(note_directory, notes)
-    print(f"\rSimilarities Saved! { time() - start_time}")
+    print(f"\rSimilarities Saved! {time() - start_time}")
     print(f"Files Updated! {time() - start_time}")
-

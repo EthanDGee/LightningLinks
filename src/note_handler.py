@@ -1,14 +1,14 @@
 import os
 import json
 
-
 # final variables
 NOTE_EXTENSION = ".md"
 EXCLUSIVE_EXTENSION = ".excalidraw.md"
 LIGHTNING_LINKS_HEADER = "### Lightning Links"
-ENCODING  = 'utf-8'
+ENCODING = 'utf-8'
 LINK_START = "[["
 LINK_END = "]]"
+
 
 def ensure_proper_endings(notes_directory):
     """
@@ -26,7 +26,8 @@ def ensure_proper_endings(notes_directory):
 
     files_updated = 0
     for filename in os.listdir(notes_directory):
-        if filename.endswith(NOTE_EXTENSION) and not filename.endswith(EXCLUSIVE_EXTENSION):  # Process Markdown files only
+        if filename.endswith(NOTE_EXTENSION) and not filename.endswith(
+                EXCLUSIVE_EXTENSION):  # Process Markdown files only
             file_path = os.path.join(notes_directory, filename)
 
             # Read the file's contents
@@ -41,8 +42,8 @@ def ensure_proper_endings(notes_directory):
                 with open(file_path, 'a', encoding=ENCODING) as file:
                     file.write("\n")
 
-
     print(f"Updated {files_updated} files to fit conventions.")
+
 
 def parse_note(file_path: str):
     """
@@ -58,8 +59,6 @@ def parse_note(file_path: str):
             - 'body': Main content of the file (excluding smart links section).
             - 'smart_links': Smart Links section content (if any, otherwise empty string).
     """
-    # Constants for better readability
-
 
     # Dictionary to store the parsed note content
     note_info = {"links": "", "tags": "", "body": "", "smart_links": ""}
@@ -151,7 +150,8 @@ def load_all_markdown_files(notes_directory):
     for file_name in os.listdir(notes_directory):
 
         file_path = os.path.join(notes_directory, file_name)
-        if os.path.isfile(file_path) and file_name.endswith(NOTE_EXTENSION) and not file_name.endswith(EXCLUSIVE_EXTENSION):
+        if os.path.isfile(file_path) and file_name.endswith(NOTE_EXTENSION) and not file_name.endswith(
+                EXCLUSIVE_EXTENSION):
             # with open(file_path, 'r', encoding=ENCODING) as file:
             file_content = parse_note(file_path)
             file_content["file_name"] = file_name
@@ -159,6 +159,14 @@ def load_all_markdown_files(notes_directory):
 
     return all_files
 
+
+def format_inline_lighting_links(file_content, num_lightning_links):
+    # join a specified number of similar notes into a line
+    formatted_links = f"{LINK_START}LINK_{f"{LINK_START}     {LINK_END}".join(file_content["similar_notes"][:num_lightning_links])}{LINK_END}"
+    # remove the note extensions from links
+    formatted_links.replace(NOTE_EXTENSION, "")
+
+    return formatted_links
 
 
 def write_to_file(notes_directory, file_content, num_lightning_links):
@@ -189,7 +197,6 @@ def write_to_file(notes_directory, file_content, num_lightning_links):
         file.write(file_content["tags"])
         file.write(file_content["body"])
 
-
         # remove self if there
         if file_content['file_name'] in file_content["similar_notes"]:
             file_content["similar_notes"].remove(file_content['file_name'])
@@ -198,7 +205,7 @@ def write_to_file(notes_directory, file_content, num_lightning_links):
         file.write(LIGHTNING_LINKS_HEADER + "\n")
 
         # add all notes in one line
-        file.write(f"{LINK_START}{f"{LINK_START}     {LINK_END}".join(file_content["similar_notes"][:num_lightning_links])}{LINK_END}".replace(NOTE_EXTENSION, ""))
+        file.write(format_inline_lighting_links(file_content, num_lightning_links))
 
 
 def save_similar_notes(notes_directory, notes):
@@ -264,6 +271,3 @@ def get_current_note(notes_directory):
         last_open = json.load(file)
 
     return last_open["lastOpenFiles"][0]
-
-
-

@@ -136,6 +136,7 @@ def suggest(notes_directory):
 
     :return: None
     """
+
     class ExpectedResponse(pydantic.BaseModel):
         suggestion: str
         reasoning: str
