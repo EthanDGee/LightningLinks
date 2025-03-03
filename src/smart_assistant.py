@@ -6,6 +6,19 @@ import torch
 
 
 def parse_similar(directory, similar_notes):
+    """
+    Parses a list of similar note files within a provided directory and generates
+    a formatted string containing details such as the file name, links, tags, and
+    body content of each note. This function processes the notes by leveraging
+    a parsing utility from the `note_handler` module.
+
+    :param directory: Location of the directory containing the note files.
+    :type directory: str
+    :param similar_notes: List of note file names to be parsed.
+    :type similar_notes: list[str]
+    :return: A formatted string containing details of the parsed similar notes.
+    :rtype: str
+    """
     similar_notes_parsed = ""
 
     for note in similar_notes:
@@ -21,6 +34,21 @@ def parse_similar(directory, similar_notes):
 
 
 def create(prompt, directory):
+    """
+    Creates a new note based on the given user prompt pulling from relevant
+    existing notes in the specified directory. This function uses OpenAI's
+     model to generate a structured response that adheres to the `NewFile`
+     class format. The note is then saved to the  specified directory upon
+     successful creation.
+
+    :param prompt: The main user input that specifies the content or context for
+        the note to be created.
+    :type prompt: str
+    :param directory: The directory path where the current and new notes are or
+        will be stored, including any similar note references.
+    :type directory: str
+    :return: None
+    """
     print("Creating new note: \n")
 
     class NewFile(pydantic.BaseModel):
@@ -96,6 +124,18 @@ def create(prompt, directory):
 
 
 def suggest(directory):
+    """
+    Suggests a new note topic based on the provided directory containing existing notes and their
+    metadata. The suggestion is derived by analyzing similar notes, parsed content, and the overall
+    list of available notes to try and find gaps in the users obsidian zettlekasten system. Utilizes
+    open AIs structured output to generate a structured response that adheres to the `ExpectedResponse`
+    with data about the suggested topic and a reasoning for the suggestion.
+
+    :param directory: The directory containing the existing notes and metadata.
+    :type directory: str
+
+    :return: None
+    """
     class ExpectedResponse(pydantic.BaseModel):
         suggestion: str
         reasoning: str
@@ -161,8 +201,9 @@ def suggest(directory):
         print("Please enter y or n")
 
     if user_input == "y":
-        prompt = f"create a note about {response.suggestion} making sure that it covers the topics covered in my reasoning {response.reasoning}",
+        prompt = f"create a note about {response.suggestion}",
         create(prompt, directory)
+
 
 if __name__ == "__main__":
 
@@ -199,5 +240,3 @@ if __name__ == "__main__":
 
         if command not in ["s", "c", "q"]:
             print("Invalid command. Please enter a valid command.")
-
-
