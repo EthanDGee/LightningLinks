@@ -129,25 +129,98 @@ Lorem exampleum noteum, craftedum to exemplify the greatness of your own brillia
 
 ### Lightning Links Creator
 
+The **Lightning Links Creator** can be run quickly and easily. Just follow these steps:
+
+1. **Ensure Setup is Complete**
+
+- Make sure you've followed all steps in the **Set Up** section (e.g., installed dependencies, configured API keys).
+
+2. Navigate to the `src/` directory within the project directory in your terminal
+
+``` bash
+  cd src/
+```
+
+3. **Run the Creator Script**
+
+- Use the following command to run the script in its simplest form:
+
+``` bash
+   python lightning_links_creator.py
+```
+
+4. **Enter in your notes directory**
+
+- You will be prompted to enter a directory, this will be directory with in which you have all `.md` files in your
+  obsidian project
+- Hit enter, and sit back and relax as all your notes, are automagically connected.
+- By default, it will add the 3 most relevant notes to each file, as well as save the top 10 most relevant for smart
+  assistant usage.
+
+5: Advanced Usage (Optional)
+
+- For advanced users you can cut away the prompting sections, and customize your smart links by adding arguments in the
+  following order
+- The more top connections you have the more accurate your assistant usage will be, but it will also be more expensive,
+  and can lead to slower response times in the extreme cases.
+
+```bash 
+ python lightning_links_creator.py [directory] [number of top connections to save] [number of links to add]
+```
+
+Example
+
+```bash 
+ python lightning_links_creator.py myNotes/ 25 10
+```
+
 ### Smart Assistant (Zeus)
 
+1. **Ensure Setup is Complete**
 
+- Make sure you've followed all steps in the **Set Up** section (e.g., installed dependencies, configured API keys).
+- This does require lightning links to have been created, as it does pull from the relevant notes section to have
+  accurate data.
 
-3. **Check Your Notes**:
-    - After processing, each note will have a "Relevant Notes" section appended to its bottom, listing links to other
-      related notes.
+2. **Check Your Notes**:
 
-4. **Generate New Notes (Optional)**:
-    - Use the note creation feature to expand your Zettelkasten by generating new notes based on the contents of related
-      ones.
+- After processing, each note will have a "Lighting Links" section appended to its bottom, listing links to other
+  related notes.
+
+3. Navigate to the `src/` directory within the project directory in your terminal
+
+``` bash
+  cd src/
+```
+
+4. **Run the Creator Script**
+
+- Use the following command to run the script in its simplest form:
+
+``` bash
+   python smart_assistant.py
+```
+
+4. **Enter in your notes directory**
+
+- You will be prompted to enter a directory, this will be directory with in which you have all `.md` files in your
+  obsidian project
+- Hit enter, and sit back and wait for the assistant to load. It is just fetching the reference list of all top
+  connections for each note
+
+5. **Available Commands**
+   Once the program starts, you can choose one of the following commands:
+    - **`s: Suggest`**
+      This analyzes your recent notes and suggests a new topic you might want to consider adding to your collection.
+    With the option to automatically add a note on the topic to your notes. 
+    - **`c: Create`**
+      This creates a new note based on a topic you specify. Simply follow the prompt to enter your desired topic, and
+      the tool will intelligently generate a new note for you.
+    - **`q: Quit`**
+      Use this to exit the tool
 
 ---
 
-## Advance Usage
-
-For a more fine tuned experince, as well as for automating lightning links to adjust connections regularly, the 
-
----
 
 ## Contribution
 
@@ -158,9 +231,13 @@ branch, and open a pull request.
 
 - Port the Project to an Obsidian Plugin for ease of use. 
 - Expand notes compatibility (e.g., plain text files or other formats beyond Markdown).
-
+- Allowing for people that use the folder system within obsidian for advanced organization
+- 
 ---
 
+### HACKUSU
+
+This project was made over the course of 18 hours for the [HackUSU 25](https://huntsman.usu.edu/hackusu/)
 ## License
 
 This project is licensed under the MIT License. Please refer to the `LICENSE` file for more details.
