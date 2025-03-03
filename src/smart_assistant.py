@@ -4,6 +4,8 @@ import pydantic
 import os
 import torch
 
+NOTE_EXTENSION = ".md"
+
 
 def parse_similar(notes_directory, similar_notes):
     """
@@ -111,7 +113,7 @@ def create(prompt, notes_directory):
     parsed_return = completion.choices[0].message.parsed
 
     new_note = {
-        "file_name": f"{parsed_return.file_name}.md",
+        "file_name": clean_up_note_name(parsed_return.file_name),
         "links": f'{parsed_return.links}\n',
         "tags": f'{parsed_return.tags}\n',
         "body": f'{parsed_return.body}\n',
@@ -203,6 +205,20 @@ def suggest(notes_directory):
     if user_input == "y":
         prompt = f"create a note about {response.suggestion}"
         create(prompt, notes_directory)
+
+
+def clean_up_note_name(note_name):
+    # returns a cleaned up note name that matches the styling convention of obsidian
+
+    # swap out space alternatives for spaces
+    note_name = note_name.replace("_", " ")
+    note_name = note_name.replace("-", " ")
+
+    # add extension if it's missing
+    if NOTE_EXTENSION not in note_name:
+        note_name += NOTE_EXTENSION
+
+    return note_name
 
 
 if __name__ == "__main__":
