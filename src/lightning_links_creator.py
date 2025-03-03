@@ -178,13 +178,12 @@ if __name__ == "__main__":
     # encode sentences
     print("Encoding Sentences...", end="")
     encoded_sentences = find_similarities(model, sentences)
-    print(encoded_sentences)
-    print(encoded_sentences.shape)
-    print(type(encoded_sentences))
     print(f"\rSentences Encoded! {time() - start_time}")
     # find top n for each note
+    print("Finding Top N Similarities...", end="")
     top_n_similarities_indexes = get_all_top_n_similarities(encoded_sentences, similar_count)
-
+    print(f"\rTop N Similarities Found! {time() - start_time}")
+    print("Updating Lighting Links...", end="")
     # append to file ends
     for i in range(len(top_n_similarities_indexes)):
         file_names = []
@@ -196,5 +195,9 @@ if __name__ == "__main__":
 
         note_handler.write_to_file(note_directory, notes[i], lightning_links_count)
 
+    print(f"\rLightning Links Updated! {time() - start_time}")
+    print("Saving Similarities...", end="")
     notes = note_handler.save_similar_notes(note_directory, notes)
+    print(f"\rSimilarities Saved! { time() - start_time}")
+    print(f"Files Updated! {time() - start_time}")
 

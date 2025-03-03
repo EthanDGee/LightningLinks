@@ -6,7 +6,9 @@ def ensure_trailing_empty_line(directory):
     Scans all .md files in the specified directory,
     ensures each file ends with an empty line.
     """
-    print("Ensuring files end with an empty line...")
+    print("Ensuring formatting of files...")
+
+    SMART_LINKS_HEADER = "### Lightning Links"
 
     files_updated = 0
     for filename in os.listdir(directory):
@@ -17,8 +19,8 @@ def ensure_trailing_empty_line(directory):
             with open(file_path, 'r', encoding='utf-8') as file:
                 lines = file.readlines()
 
-            # Check if the file does not end with an empty line
-            if len(lines) != 0 and not lines[-1].strip() == "":
+            # Check if the file is not empty and does not end with an empty line, or if its already formatted
+            if len(lines) != 0 and not lines[-1].strip() == "" and lines[-2].strip() != SMART_LINKS_HEADER:
                 print(f"Updated {filename}")
                 files_updated += 1
                 # Append an empty line
@@ -170,7 +172,7 @@ def write_to_file(directory, file_content, num_lightning_links):
         file.write(smart_links_header + "\n")
 
         # add all notes in one line
-        file.write(f"[[{"]] [[".join(file_content["similar_notes"][:num_lightning_links + 1])}]]".replace(".md", ""))
+        file.write(f"[[{"]]     [[".join(file_content["similar_notes"][:num_lightning_links])}]]".replace(".md", ""))
 
 
 def save_similar_notes(directory, notes):
