@@ -20,15 +20,20 @@ def find_similarities(model, sentences):
     return similarities
 
 
-def extract_sentences(notes_list):
+def extract_bodies(notes_list):
     """
-    Extracts the body content (sentences) from a list of notes.
+    Extracts the "body" content from each individual note in the provided list.
 
-    Args:
-        notes_list (list): A list of dictionaries where each dictionary contains a "body" key.
+    This function processes a list of notes, each represented as a dictionary,
+    and retrieves the value associated with the "body" key. It compiles and
+    returns a list of all these "body" contents. The function assumes that
+    every dictionary in the list contains a "body" key.
 
-    Returns:
-        list: A list of strings, each representing the body content of an individual note.
+    :param notes_list: List of dictionaries where each dictionary represents a note
+        and contains a "body" key with its associated content.
+    :type notes_list: list[dict]
+    :return: List of "body" contents extracted from the input dictionaries.
+    :rtype: list[str]
     """
     notes_sentences = []
 
@@ -40,8 +45,19 @@ def extract_sentences(notes_list):
 
 def find_min_of_indexes(indexes, row):
     """
-    given a set of indexes, find the index of the smallest value in the row, as well as the index of the index in the indexes array
+    Finds the minimum value among specified indexes in a given row and returns the
+    index corresponding to the minimum value, along with its position in the
+    indexes list.
 
+    The function iterates through the provided indexes, compares their corresponding
+    values in the row, and identifies the index with the smallest value. Additionally,
+    it identifies the position in the original `indexes` list of this minimum index.
+
+    :param indexes: A list of integers representing the indices to check in the row.
+    :param row: A list of numerical values representing the row to search within.
+    :return: A tuple containing:
+        - The index in the row corresponding to the minimum value (first element),
+        - The position of the minimum index in the input `indexes` list (second element).
     """
     min_index = indexes[0]
     index_of_min_index = 0
@@ -167,7 +183,7 @@ if __name__ == "__main__":
 
     # get sentences
     print("Extracting Sentences...", end="")
-    sentences = extract_sentences(notes)
+    sentences = extract_bodies(notes)
     print(f"\rSentences Extracted! {time() - start_time}")
 
     # load model Source: https://huggingface.co/sentence-transformers/all-mpnet-base-v2
