@@ -1,107 +1,175 @@
 # Lightning Links
 
-Welcome to **Lightning Links**, a Python project designed to supercharge your Obsidian Zettelkasten system by providing intelligent note management and enhancement tools. This project automates processes to help you stay organized, connect ideas, and grow your knowledge base efficiently.
+Welcome to **Lightning Links**, a Python project crafted to enhance and assist your Obsidian Zettelkasten system by
+intelligently managing your notes. This tool automates the connection of similar ideas, helps fill gaps in your
+knowledge base, and even generates new notes that are based on your notes—all while keeping your Zettelkasten clean and
+efficient.
 
 ---
 
 ## Features
 
-### 1. **Automatic Suggestion of Relevant Notes**
-   - Lightning Links analyzes the bodies of all your notes and suggests connections (lightning links) between them.
-   - Each note comes with a list of relevant notes, making it easier to visualize relationships within your Zettelkasten system.
+### 1. **Automatic Addition of Relevant Notes**
+
+- For every note in your system, Lightning Links analyzes its content and automatically appends a section of relevant
+  notes to the bottom of every note.
+- No manual effort needed in connecting ideas—it’s all done for you.
+- Feel like the links are a bit out of date? Simply re-run the linker, and it will readjust to reflect your changes
 
 ### 2. **Gap-Filled Suggestions**
-   - By examining your current focus or project, it identifies gaps in your Zettelkasten and suggests notes to fill those gaps.
-   - Provides a methodical way of ensuring your knowledge is inter-connected and comprehensive.
 
-### 3. **Automatic Note Creation**
-   - Generates new notes based on related content from your existing notes.
-   - These generated notes are **auto-linked** to every relevant note in your system, making them seamlessly integrated.
+- Considers what you're currently working on and suggests additional notes that may fill important gaps in your
+  Zettelkasten.
+- All based on what you're currently working on, and what you've already done.
+- Helps to ensure your ideas and knowledge are as comprehensive as possible.
+- Don't want to waste your time manually writing the note it suggested? No problem, the smart assistant can create the
+  note for you, all based upon your other notes, it will even link up the note for you.
+
+### 3. **Smart Note Creation**
+
+- To lazy to right a note on a topic you've already have covered too many times, but are just too busy to get around to
+  writing it? Have the smart assistant write that note for you, it will even do all the connections for you.
+
+    - **Automatically appended** with links to related notes.
+    - **Based on you**, created with your notes in mind.
+    - **Written like you**, it already knows your writing tendencies, and matches them effortlessly, saving you the
+      hassle of having to go back and change things.
+    - **Expanded upon intelligently**, forging connections and helping grow your Zettelkasten repository.
 
 ---
 
-## Installation
+## Set Up
 
-Before starting, ensure you have Python installed on your system. Clone this repository and install the required dependencies:
+To get started, ensure you have Python installed. Follow these steps:
+
+1. Clone the repository to your local machine:
+
+```shell script
+git clone https://github.com/your-repo/lightning-links.git
+   cd lightning-links
+```
+
+2. Install the project dependencies:
 
 ```shell script
 pip install -r requirements.txt
 ```
 
-Dependencies include libraries like:
-- **Huggingface Transformers**: For advanced natural language processing.
-- **Scikit-Learn** and **NumPy**: For similarity computations.
-- **OpenAI**: For note expansion based on existing content.
-- Check the `requirements.txt` file for the full list of dependencies.
+3. Set up Hugging Face:
+    - Create an account on [Hugging Face](https://huggingface.co/) if you don't already have one.
+    - Obtain your API token by navigating to your account settings -> Access Tokens and clicking "New Token".
+    - Copy the token and save it for later use.
+    - Configure your system to use the token by running the following command in the terminal:
+      ```shell
+      huggingface-cli login
+      ```
+    - Paste your API token when prompted. If the login is successful, the CLI will confirm that your token has been
+      saved locally. This allows the application to leverage Hugging Face's models and APIs seamlessly.
+
+4. Add the OpenAI API key (optional):
+    - If you want to use OpenAI for note generation, and suggestion, obtain an API key from [OpenAI](https://platform.openai.com/).
+    - Once you have the key, create a `.env` file in the project directory and add the following line:
+      ```
+      OPENAI_API_KEY=your_openai_api_key
+      ```
+    - Replace `your_openai_api_key` with the key you received from OpenAI.
 
 ---
 
 ## How It Works
 
-### Core Components:
-1. **lightning_links_creator.py**:  
-   - Handles the generation of links and suggestions between notes.  
-   - Key functions include:
-     - `find_similarities`: Finds similarities between notes' contents.
-     - `extract_bodies`: Parses and extracts the main text from notes.
-     - `update_notes_with_similarities`: Updates notes with computed "lightning links."
+### Lightning Link Connector:
 
-2. **note_handler.py**:  
-   - Manages file handling, parsing, and formatting.  
-   - Key functions include:
-     - `get_all_note_names` & `load_all_markdown_files`: Manage your notes in the directory.
-     - `format_inline_lighting_links`: Inserts links into the note body.
-     - `save_similar_notes`: Saves generated links and suggestions into the appropriate notes.
+1. **Parse notes**:
+    - Looks through all your notes and only grabs the most important data.
 
-3. **smart_assistant.py**:  
-   - High-level orchestration for generating, suggesting, and expanding notes.  
-   - Key functions include:
-     - `create`: Automatically generates new notes based on related ones.
-     - `suggest`: Provides recommendations to fill gaps in your Zettelkasten.
-     - `clean_up_note_name`: Normalizes and ensures proper naming conventions for notes.
+2. **Analyze Similarities**:
+    - Embeds your notes using sentence transformers to find out what you're really talking about.
+    - Using algorithms based on Natural Language Processing (NLP), Lightning Links then determines the most relevant
+      notes
+      for each file, and saves it to your `.obsidian` folder so the smart assistant doesn't need to reindex them. By default this is set to 10, but you can do more, for higher accuracy at the cost of higher api usage fees. To customize look at Advanced Use
 
+3. **Append Relevant Links**:
+    - A "Lightning links section" section is then appended at the **bottom** of every note, making it easy to see which
+      ideas connect.
+    - It only appends the most 3 relevant links to the end of your notes.
+    - Are three notes just not enough? Look at advanced use to customize it.
+    - 
+
+---
+
+#### This is an example note, I'm sure yours are far better.
+
+Lorem exampleum noteum, craftedum to exemplify the greatness of your own brilliantum ideas. Althoughum this ipsum serves its purposum here, your notes undoubtedlyus surpass this one in insightum, creativitatis, and relevanceum. Humanus ingenuity shall triumphet always.
+
+### Lightning Links
+[[ZettleKasten Explained]]    [[Too many notes not enough time]]     [[Second Brain, Second Life]]
+
+---
+
+### Smart Assistant
+
+1. **Suggest Missing Links**:  The system identifies knowledge gaps and surfaces notes you may not have thought to connect with your current
+      work.
+   1. Looks at your current workspace and pulls relevant notes.
+   2. Those notes are then parsed, and there main ideas are extracted so that open AI can see what you've been writing about.
+   3. Takes a snapshot of your overall zettlekasten notes.
+   4. Ships it off to open ai to look for gaps in your system.
+   5. Suggests a relevant note, as well as the reasoning as to why it might be helpful to add to your zettle kasten.
+   6. Asks you if you want the smart assistant to automagically add it to your notes for you.
+
+2. **Generate Notes**: Based on the content of existing notes, Lightning Links can automatically generate fully linked, expanded notes.
+      1. Asks you for what you want
+      2. Pulls the relevant data from what you're working on.
+      3. Ships it off to open ai to generate the content based on your notes, styling, and more.
+      4. Formats the data, links it to your other notes, and adds it to your zettlekasten.
 ---
 
 ## Usage
 
-1. **Prepare Your Notes**:  
-   Place all your notes in the specified directory and ensure they're properly formatted in Markdown.
+### Lightning Links Creator
 
-2. **Run Lightning Links**:
-   - Use the main script to process all notes, generate suggestions, and create automatic links.
-   - Suggestions and links will be embedded directly into the note bodies.
+### Smart Assistant (Zeus)
 
-3. **Automatic Note Creation**:
-   - Let the tool analyze and expand new ideas for you through its "create" function, enriching your Zettelkasten further.
+
+
+3. **Check Your Notes**:
+    - After processing, each note will have a "Relevant Notes" section appended to its bottom, listing links to other
+      related notes.
+
+4. **Generate New Notes (Optional)**:
+    - Use the note creation feature to expand your Zettelkasten by generating new notes based on the contents of related
+      ones.
 
 ---
 
-## Example Workflow
+## Advance Usage
 
-1. **Connect Existing Notes**:
-   - Lightning Links suggests:  
-     `"Note A"` ↔ `"Note B"` based on the relevance of the content.
-
-2. **Fill Gaps**:
-   - When working on a research topic, Lightning Links might suggest that adding `"Note C"` could help connect `"Note X"` and `"Note Y"`.
-
-3. **Generate New Notes**:
-   - If gaps remain, Lightning Links can create `"Note D"` automatically, based on similar content from `"Note A, Note B, and Note C"`, and seamlessly link it everywhere.
+For a more fine tuned experince, as well as for automating lightning links to adjust connections regularly, the 
 
 ---
 
 ## Contribution
 
-Contributions are welcome! If you have an idea to improve **Lightning Links**, feel free to fork this repository, create a new branch, and submit a pull request.
+Contributions are welcome! If you'd like to enhance Lightning Links, feel free to fork the repository, create your
+branch, and open a pull request.
 
 ### Roadmap:
-- Expand note compatibility beyond Markdown.
-- Integrate visualization tools for better management of Zettelkasten connections.
+
+- Port the Project to an Obsidian Plugin for ease of use. 
+- Expand notes compatibility (e.g., plain text files or other formats beyond Markdown).
 
 ---
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+This project is licensed under the MIT License. Please refer to the `LICENSE` file for more details.
 
-Enjoy automated, smarter note management with **Lightning Links**! 🚀
+---
+
+Take your note-taking to the next level with **Lightning Links**! Let the automation connect your ideas, suggest new
+ones, and grow your Zettelkasten seamlessly! 🚀
+
+--- 
+
+Let me know if you'd like further refinements! 😊
