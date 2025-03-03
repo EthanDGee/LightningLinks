@@ -266,7 +266,4 @@ def get_current_note(notes_directory):
     return last_open["lastOpenFiles"][0]
 
 
-if __name__ == "__main__":
-    notes_directory = "C:/Users/ethan/SecondBrain/SecondBrain/"
-    ensure_proper_endings(notes_directory)
 

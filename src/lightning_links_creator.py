@@ -133,6 +133,13 @@ def get_all_top_n_similarities(similarities, n: int = 10):
 
     return top_n_indexes_table
 
+def update_notes_with_similarities(notes, note_directory, top_n_similarities_indexes, lightning_links_count):
+    """Update notes with top N similarities and save them."""
+    for i, similarity_indexes in enumerate(top_n_similarities_indexes):
+        notes[i]["similar_notes"] = [notes[sim_idx]["file_name"] for sim_idx in similarity_indexes]
+        note_handler.write_to_file(note_directory, notes[i], lightning_links_count)
+
+
 
 if __name__ == "__main__":
 
@@ -183,7 +190,7 @@ if __name__ == "__main__":
 
     # get sentences
     print("Extracting Sentences...", end="")
-    sentences = extract_bodies(notes)
+    bodies = extract_bodies(notes)
     print(f"\rSentences Extracted! {time() - start_time}")
 
     # load model Source: https://huggingface.co/sentence-transformers/all-mpnet-base-v2
@@ -193,7 +200,7 @@ if __name__ == "__main__":
 
     # encode sentences
     print("Encoding Sentences...", end="")
-    encoded_sentences = find_similarities(model, sentences)
+    encoded_sentences = find_similarities(model, bodies)
     print(f"\rSentences Encoded! {time() - start_time}")
     # find top n for each note
     print("Finding Top N Similarities...", end="")
@@ -201,15 +208,8 @@ if __name__ == "__main__":
     print(f"\rTop N Similarities Found! {time() - start_time}")
     print("Updating Lighting Links...", end="")
     # append to file ends
-    for i in range(len(top_n_similarities_indexes)):
-        file_names = []
-        notes[i]["similar_notes"] = []
 
-        for similarity_index in top_n_similarities_indexes[i]:
-            notes[i]["similar_notes"].append(notes[similarity_index]["file_name"])
-
-
-        note_handler.write_to_file(note_directory, notes[i], lightning_links_count)
+    update_notes_with_similarities(notes, note_directory, top_n_similarities_indexes, lightning_links_count)
 
     print(f"\rLightning Links Updated! {time() - start_time}")
     print("Saving Similarities...", end="")
