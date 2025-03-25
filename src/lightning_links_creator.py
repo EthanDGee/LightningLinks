@@ -1,3 +1,4 @@
+import numpy as np
 import note_handler
 from sentence_transformers import SentenceTransformer
 from time import time
@@ -91,22 +92,24 @@ def get_top_n_similarities_from_row(row, num_similarities: int = 10):
 
     if num_similarities == 0:
         return []
+    #
+    # # create initial top_n from 0 to n-1
+    # top_n_indexes = list(range(num_similarities))
+    # # we need both indexes, so we can find the smallest index in the row array, and the index of smallest index so we know which of the top_n to swap
+    #
+    # smallest_index, index_of_smallest_index = find_min_of_indexes(top_n_indexes, row)
+    # smallest_value = row[smallest_index]
+    #
+    # # now we iterate through the remaining entries and continually swap out the smallest entry when we find a bigger entry
+    # for index in range(num_similarities, len(row)):
+    #     if row[index] > smallest_value:
+    #         # swap out for the higher value
+    #         top_n_indexes[index_of_smallest_index] = index
+    #         # find new smallest
+    #         smallest_index, index_of_smallest_index = find_min_of_indexes(top_n_indexes, row)
+    #         smallest_value = row[smallest_index]
 
-    # create initial top_n from 0 to n-1
-    top_n_indexes = list(range(num_similarities))
-    # we need both indexes, so we can find the smallest index in the row array, and the index of smallest index so we know which of the top_n to swap
-
-    smallest_index, index_of_smallest_index = find_min_of_indexes(top_n_indexes, row)
-    smallest_value = row[smallest_index]
-
-    # now we iterate through the remaining entries and continually swap out the smallest entry when we find a bigger entry
-    for index in range(num_similarities, len(row)):
-        if row[index] > smallest_value:
-            # swap out for the higher value
-            top_n_indexes[index_of_smallest_index] = index
-            # find new smallest
-            smallest_index, index_of_smallest_index = find_min_of_indexes(top_n_indexes, row)
-            smallest_value = row[smallest_index]
+    top_n_indexes = np.argsort(row)[::-1][1:num_similarities+1]
 
     return top_n_indexes
 
@@ -128,7 +131,7 @@ def get_all_top_n_similarities(similarities, n: int = 10):
     for row_id in range(len(similarities)):
         # find the rows top n indexes
         row = similarities[row_id]
-        top_n_indexes = get_top_n_similarities_from_row(row, n)
+        top_n_indexes = get_top_n_similarities_from_row(row.numpy(), n)
         # add to the table
         top_n_indexes_table.append(top_n_indexes)
 

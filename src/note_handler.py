@@ -162,7 +162,10 @@ def load_all_markdown_files(notes_directory):
 
 def format_inline_lighting_links(file_content, num_lightning_links):
     # join a specified number of similar notes into a line
-    formatted_links = f"{LINK_START}LINK_{f"{LINK_START}     {LINK_END}".join(file_content["similar_notes"][:num_lightning_links])}{LINK_END}"
+    # format middle
+    formatted_links = f"{LINK_END}     {LINK_START}".join(file_content["similar_notes"][:num_lightning_links])
+    formatted_links = f"{LINK_START}{formatted_links}{LINK_END}" # add bookends
+
     # remove the note extensions from links
     formatted_links.replace(NOTE_EXTENSION, "")
 
