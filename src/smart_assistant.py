@@ -11,6 +11,8 @@ class SmartAssistant:
     def __init__(self, notes_directory):
         self.notes_directory = notes_directory
         self.similar_notes = note_handler.load_similar_notes(notes_directory)
+        print("Loaded similar notes")
+        print(self.similar_notes.keys())
 
     def parse_similar(self, notes):
         """
@@ -219,9 +221,12 @@ class SmartAssistant:
         file_suggest_system_prompt = (
             "You are a research assistant who's job is to suggest the most relevant file for a given prompt."
             " and return its name making sure to select one from list of files provided. ")
-        file_suggest_user_prompt = prompt + "\n\n\nFiles:\n" + self.similar_notes
+        all_note_names = note_handler.get_all_note_names(self.notes_directory)
+        # remove the links
+        all_note_names = all_note_names.replace("[", "").replace("]", "")
+        file_suggest_user_prompt = prompt + "\n\n\nFiles:\n" + all_note_names
         model = 'gpt-4o-mini'
-        temperature = 0.2
+        temperature = 0.1
 
         client = OpenAI(api_key=os.getenv("open_ai_key"))
         completion = client.beta.chat.completions.parse(
@@ -235,6 +240,8 @@ class SmartAssistant:
         )
 
         file_name = completion.choices[0].message.parsed.file_name
+        # add file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
+        file_name = file_name + ".md"
 
         # now we get the similar files and ask for a response based on their inputs
 
@@ -303,12 +310,15 @@ if __name__ == "__main__":
         print("\n\nAvailable commands:")
         print("s: Suggest")
         print("c: Create")
+        print("a: Ask yourself a question about your notes")
         print("q: Quit")
         command = input("Enter your choice (s/c/q): ").lower()
         if command == 's':
             smart_assistant.suggest()
         if command == 'c':
             smart_assistant.create(input("Enter the topic you would like to create: "))
+        if command == 'a':
+            smart_assistant.ask_yourself(input("Enter your question: "))
         if command == 'q':
             break
 
