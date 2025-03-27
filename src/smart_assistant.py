@@ -297,25 +297,32 @@ class SmartAssistant:
 
 if __name__ == "__main__":
 
-    print(torch.cuda.is_available())
-    print("Welcome to the Lightning Notes Assistant!")
-    print("The best way to find holes in your notes, and automagically create plugs to fill them")
-    print("To get started, please enter the directory where your notes are stored")
-    while True:
-        directory = input("Enter the directory path: ")
-        if not os.path.isdir(directory):
-            print("Error: The provided path is not a valid directory. Please try again.")
-        else:
-            break
+    arguments = os.sys.argv
+
+    if len(arguments) > 1:
+        directory = arguments[1]
+    else:
+        print(torch.cuda.is_available())
+        print("Welcome to the Lightning Notes Assistant!")
+        print("The best way to find holes in your notes, and automagically create plugs to fill them")
+        print("To get started, please enter the directory where your notes are stored")
+        while True:
+            directory = input("Enter the directory path: ")
+            if not os.path.isdir(directory):
+                print("Error: The provided path is not a valid directory. Please try again.")
+            else:
+                break
     # initiate smart assistant
 
     smart_assistant = SmartAssistant(directory)
 
-    print("\nExcellent! Now let's get started with introducing you to our tools:")
-    print("Currently, we have two tools:")
-    print(
-        "1. Suggest: This looks at the notes you've been looking at recently and suggests a topic that you might want to add to your notes.")
+    print("Excellent! Now let's get started with introducing you to our tools:")
+    print("Currently, we have three tools:")
+    print("1. Suggest: This looks at the notes you've been looking at recently and suggests a topic that you might want "
+          "to add to your notes.")
     print("2. Create: This creates a new note based on the topic you suggest.")
+    print("3. Ask yourself a question about your notes: This allows you to ask questions about your notes and get a "
+          "response back.")
     print("\nTo get started, please enter the command you would like to use:")
     while True:
         print("\n\nAvailable commands:")
