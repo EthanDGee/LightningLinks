@@ -11,8 +11,6 @@ class SmartAssistant:
     def __init__(self, notes_directory):
         self.notes_directory = notes_directory
         self.similar_notes = note_handler.load_similar_notes(notes_directory)
-        print("Loaded similar notes")
-        print(self.similar_notes.keys())
 
     def parse_similar(self, notes):
         """
@@ -214,6 +212,19 @@ class SmartAssistant:
             self.create(prompt)
 
     def ask_yourself(self, prompt):
+        """
+        Provides a response to a user's query based on there notes directory by analyzing the prompt getting the most
+        relevant file, and then using the similar files and the content of that file to generate a response.
+
+
+        Args:
+            prompt (str): The user's input or query based on which a file and response need to be suggested and
+                generated.
+
+        Raises:
+            Various exceptions from OpenAI API calls if inputs or API calls fail.
+
+        """
         class FileName(pydantic.BaseModel):
             file_name: str
 
