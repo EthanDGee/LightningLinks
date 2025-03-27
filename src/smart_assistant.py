@@ -12,23 +12,21 @@ class SmartAssistant:
         self.notes_directory = notes_directory
         self.similar_notes = note_handler.load_similar_notes(notes_directory)
 
-    def parse_similar(self):
+    def parse_similar(self, notes):
         """
         Parses a list of similar note files within a provided directory and generates
         a formatted string containing details such as the file name, links, tags, and
         body content of each note. This function processes the notes by leveraging
         a parsing utility from the `note_handler` module.
 
-        :param notes_directory: Location of the directory containing the note files.
-        :type notes_directory: str
-        :param similar_notes: List of note file names to be parsed.
-        :type similar_notes: list[str]
+        :param notes: List of note file names to be parsed.
+        :type notes: list[str]
         :return: A formatted string containing details of the parsed similar notes.
         :rtype: str
         """
         similar_notes_parsed = ""
 
-        for note in self.similar_notes:
+        for note in notes:
             # print(note)
             current_similar = note_handler.parse_note(f"{self.notes_directory}{note}")
             similar_notes_parsed += "file_name: " + note + "\n"
@@ -38,6 +36,17 @@ class SmartAssistant:
             similar_notes_parsed += "\n"
 
         return similar_notes_parsed
+
+    def get_core_similar_notes(self, notes):
+        # a much simpler version of parse_similar() that only gets the body and file name for each note.
+        similar_bodies = ""
+
+        for note in notes:
+            current_similar = note_handler.parse_note(f"{self.notes_directory}{note}")
+            similar_bodies += f"{note}\n"
+            similar_bodies += current_similar['body'] + "\n"
+
+        return similar_bodies
 
     def create(self, prompt):
         """
@@ -50,9 +59,6 @@ class SmartAssistant:
         :param prompt: The main user input that specifies the content or context for
             the note to be created.
         :type prompt: str
-        :param notes_directory: The directory path where the current and new notes are or
-            will be stored, including any similar note references.
-        :type notes_directory: str
         :return: None
         """
         print("Creating new note: \n")
@@ -68,15 +74,14 @@ class SmartAssistant:
         current_note = note_handler.get_current_note(self.notes_directory)
 
         # load similar
-        similar_notes_dictionary = note_handler.load_similar_notes(self.notes_directory)
 
-        similar_notes = similar_notes_dictionary[current_note]
+        similar_notes = self.similar_notes[current_note]
 
         similar_notes.append(current_note)
 
         # parse similar
 
-        similar_notes_parsed = self.parse_similar()
+        similar_notes_parsed = self.parse_similar(similar_notes)
 
         # get all note names
         all_note_names = note_handler.get_all_note_names(self.notes_directory)
@@ -136,8 +141,6 @@ class SmartAssistant:
         open AIs structured output to generate a structured response that adheres to the `ExpectedResponse`
         with data about the suggested topic and a reasoning for the suggestion.
 
-        :param notes_directory: The directory containing the existing notes and metadata.
-        :type notes_directory: str
 
         :return: None
         """
@@ -149,14 +152,13 @@ class SmartAssistant:
         current_note = note_handler.get_current_note(self.notes_directory)
 
         # load similar
-        similar_notes_dictionary = note_handler.load_similar_notes(self.notes_directory)
 
-        similar_notes = similar_notes_dictionary[current_note]
+        similar_notes = self.similar_notes[current_note]
 
         similar_notes.append(current_note)
 
         # parse similar
-        similar_notes_parsed = self.parse_similar()
+        similar_notes_parsed = self.parse_similar(similar_notes)
 
         all_note_names = note_handler.get_all_note_names(self.notes_directory)
         temperature = 0.5
@@ -209,6 +211,57 @@ class SmartAssistant:
             prompt = f"create a note about {response.suggestion}"
             self.create(prompt)
 
+    def ask_yourself(self, prompt):
+        class FileName(pydantic.BaseModel):
+            file_name: str
+
+        # get a suggested file that matches the user suggest topic
+        file_suggest_system_prompt = (
+            "You are a research assistant who's job is to suggest the most relevant file for a given prompt."
+            " and return its name making sure to select one from list of files provided. ")
+        file_suggest_user_prompt = prompt + "\n\n\nFiles:\n" + self.similar_notes
+        model = 'gpt-4o-mini'
+        temperature = 0.2
+
+        client = OpenAI(api_key=os.getenv("open_ai_key"))
+        completion = client.beta.chat.completions.parse(
+            model=model,
+            temperature=temperature,
+            messages=[
+                {"role": "system", "content": file_suggest_system_prompt},
+                {"role": "user", "content": file_suggest_user_prompt}
+            ],
+            response_format=FileName,
+        )
+
+        file_name = completion.choices[0].message.parsed.file_name
+
+        # now we get the similar files and ask for a response based on their inputs
+
+        response_system_prompt = ("You are a research assistant who's job is to provide a response based on the user's "
+                                  "input using there research notes as the basis for your response. While also making "
+                                  "sure to respond in accordance with the style of the notes you have been given. ")
+        # get the source material
+
+        references = [file_name]
+        references.extend(self.similar_notes[file_name])
+        extracted_references = self.get_core_similar_notes(references)
+        temperature = 0.4
+
+        response_user_prompt = prompt + "\n\n\nNotes:\n" + extracted_references
+
+        response = client.chat.completions.create(
+            model=model,
+            temperature=temperature,
+            messages=[
+                {"role": "system", "content": response_system_prompt},
+                {"role": "user", "content": response_user_prompt}
+            ],
+            max_tokens=500
+        )
+
+        print(response.choices[0].message.content)
+
     @staticmethod
     def clean_up_note_name(note_name):
         # returns a cleaned up note name that matches the styling convention of obsidian
@@ -236,7 +289,7 @@ if __name__ == "__main__":
             print("Error: The provided path is not a valid directory. Please try again.")
         else:
             break
-    # initiate smart assistnat
+    # initiate smart assistant
 
     smart_assistant = SmartAssistant(directory)
 
