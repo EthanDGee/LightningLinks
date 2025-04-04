@@ -16,7 +16,7 @@ def find_similarities(model, sentences):
     Returns:
         ndarray: A similarity matrix where each element represents the similarity between two sentences.
     """
-    embedding = model.encode(sentences, max_length=256, show_progress_bar=True)
+    embedding = model.encode(sentences, show_progress_bar=True)
 
     similarities = model.similarity(embedding, embedding)
     return similarities
