@@ -70,14 +70,41 @@ class SmartAssistant:
             body: str
             similar_notes: list[str]
 
-        # get current note
-        current_note = note_handler.get_current_note(self.notes_directory)
+        class FileName(pydantic.BaseModel):
+            file_name: str
+
+        # get a suggested file that matches the user suggest topic
+
+        file_suggest_system_prompt = (
+            "You are a research assistant who's job is to suggest the most relevant file for a given prompt."
+            " and return its name making sure to select one from list of files provided. ")
+        all_note_names = note_handler.get_all_note_names(self.notes_directory)
+        # remove the links
+        all_note_names = all_note_names.replace("[", "").replace("]", "")
+        file_suggest_user_prompt = prompt + "\n\n\nFiles:\n" + all_note_names
+        model = 'gpt-4o-mini'
+        temperature = 0.1
+
+        client = OpenAI(api_key=os.getenv("open_ai_key"))
+        completion = client.beta.chat.completions.parse(
+            model=model,
+            temperature=temperature,
+            messages=[
+                {"role": "system", "content": file_suggest_system_prompt},
+                {"role": "user", "content": file_suggest_user_prompt}
+            ],
+            response_format=FileName,
+        )
+
+        file_name = completion.choices[0].message.parsed.file_name
+        # add file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
+        file_name = file_name + ".md"
 
         # load similar
 
-        similar_notes = self.similar_notes[current_note]
+        similar_notes = self.similar_notes[file_name]
 
-        similar_notes.append(current_note)
+        similar_notes.append(file_name)
 
         # parse similar
 
@@ -330,7 +357,7 @@ if __name__ == "__main__":
         print("c: Create")
         print("a: Ask yourself a question about your notes")
         print("q: Quit")
-        command = input("Enter your choice (s/c/q): ").lower()
+        command = input("Enter your choice (s/c/a/q): ").lower()
         if command == 's':
             smart_assistant.suggest()
         if command == 'c':
