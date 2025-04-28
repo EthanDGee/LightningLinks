@@ -1,6 +1,8 @@
 import os
 import json
 
+from torchgen.gen_functionalization_type import return_from_mutable_noop_redispatch
+
 # final variables
 NOTE_EXTENSION = ".md"
 EXCLUSIVE_EXTENSION = ".excalidraw.md"
@@ -15,9 +17,11 @@ class FileParser:
         self.notes_directory = notes_directory
         self.similar_notes = self.load_similar_notes(notes_directory)
 
+        # these are useful for cases when file data needs to be loaded
         self.file_names = []
         self.load_file_names()
 
+        # Note names are more useful LLM functionality as they are better for embeddings
         self.note_names = []
         self.load_note_names()
 
@@ -36,7 +40,6 @@ class FileParser:
         # clear the file names just in case
         self.file_names = []
 
-
         # loop through the directory and find all notes
         for filename in os.listdir(self.notes_directory):
             # Process Markdown files only, and exclude similar files that also end with '.md'
@@ -44,11 +47,37 @@ class FileParser:
                 file_path = os.path.join(self.notes_directory, filename)
                 self.file_names.append(filename)
 
-        # if called by an outside class it may be nice to immediately return the file_names
-
+        # if called by an outside program, it may be nice to immediately return the file_names
         return self.file_names
 
     def load_note_names(self):
+        """
+        Loads all note names from the specified notes directory into the instance.
+
+        This method iterates through the directory specified by `self.notes_directory`
+        and extracts the names of files with a specific extension defined by
+        `NOTE_EXTENSION`. If a file also ends with `EXCLUSIVE_EXTENSION`, it will
+        be ignored. The extracted note names are added to the `note_names`
+        attribute of the instance. This method also returns the list of
+        note names, enabling its use by external programs.
+
+        Returns:
+            list: A list of note names derived from the valid file names in the
+            notes directory.
+        """
+        # clear the note names just in case
+        self.note_names = []
+
+
+        # loop through the notes directory and get all note names
+        for filename in os.listdir(self.notes_directory):
+            # Process Markdown files only and exclude similar files that also end with '.md'
+            if filename.endswith(NOTE_EXTENSION) and not filename.endswith(EXCLUSIVE_EXTENSION):
+                note_name = filename.replace(NOTE_EXTENSION, "")
+                self.note_names.append(filename)
+
+        # return note names for a case when it's called by an outside program
+        return self.note_names
 
     def ensure_proper_endings(self):
         """
