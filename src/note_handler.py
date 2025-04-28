@@ -68,7 +68,6 @@ class FileParser:
         # clear the note names just in case
         self.note_names = []
 
-
         # loop through the notes directory and get all note names
         for filename in os.listdir(self.notes_directory):
             # Process Markdown files only and exclude similar files that also end with '.md'
@@ -86,32 +85,21 @@ class FileParser:
         sections in the notes there will be a proper place for them. If the formatting conditions are not met, it appends a
         trailing empty line to the file.
 
-        :param notes_directory: The notes_directory path where the Markdown files are located.
-        :type notes_directory: str
 
         :return: None
         """
-        print("Ensuring formatting of files...")
 
-        files_updated = 0
-        for filename in os.listdir(self.notes_directory):
-            if filename.endswith(NOTE_EXTENSION) and not filename.endswith(
-                    EXCLUSIVE_EXTENSION):  # Process Markdown files only
-                file_path = os.path.join(self.notes_directory, filename)
+        # loop through all note files
+        for file_path in self.file_names:
+            # Read the file's contents
+            with open(file_path, 'r', encoding=ENCODING) as file:
+                lines = file.readlines()
 
-                # Read the file's contents
-                with open(file_path, 'r', encoding=ENCODING) as file:
-                    lines = file.readlines()
-
-                # Check if the file is not empty and does not end with an empty line, or if its already formatted
-                if len(lines) != 0 and not lines[-1].strip() == "" and lines[-2].strip() != LIGHTNING_LINKS_HEADER:
-                    print(f"Updated {filename}")
-                    files_updated += 1
-                    # Append an empty line
-                    with open(file_path, 'a', encoding=ENCODING) as file:
-                        file.write("\n")
-
-        print(f"Updated {files_updated} files to fit conventions.")
+            # Check if the file is not empty and does not end with an empty line, or if its already formatted
+            if len(lines) != 0 and not lines[-1].strip() == "" and lines[-2].strip() != LIGHTNING_LINKS_HEADER:
+                # Append an empty line
+                with open(file_path, 'a', encoding=ENCODING) as file:
+                    file.write("\n")
 
     def parse_note(file_path: str):
         """
