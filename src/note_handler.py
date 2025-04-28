@@ -101,7 +101,7 @@ class FileParser:
                 with open(file_path, 'a', encoding=ENCODING) as file:
                     file.write("\n")
 
-    def parse_note(file_path: str):
+    def parse_note(self, file_path: str):
         """
         Parses the contents of a Markdown file to extract specific sections: links, tags, body, and smart links.
 
@@ -159,35 +159,7 @@ class FileParser:
 
         return note_info
 
-    def get_all_note_names(notes_directory):
-        """
-        Retrieve all note names from a notes_directory containing Markdown (.md) files.
-
-        This function iterates over all files in the specified notes_directory, identifies
-        Markdown files by their extension, and appends the names of these files
-        (without the NOTE_EXTENSION extension) to a string. Each note name is formatted and
-        separated by a newline in the returned string.
-
-        :param notes_directory: The path to the notes_directory containing the note files.
-            Expected to be a string representing a valid notes_directory path.
-        :type notes_directory: str
-
-        :return: A string containing formatted names of all Markdown note files in
-            the notes_directory. Each name is enclosed in double brackets `[[ ]]` and
-            separated by a newline.
-        :rtype: str
-        """
-        all_notes = ""
-
-        for file_name in os.listdir(notes_directory):
-
-            file_path = os.path.join(notes_directory, file_name)
-            if os.path.isfile(file_path) and file_name.endswith(NOTE_EXTENSION):
-                all_notes += f'{LINK_START}{file_name.replace(NOTE_EXTENSION, "")}{LINK_END}\n'
-
-        return all_notes
-
-    def load_all_markdown_files(notes_directory):
+    def load_all_note_files(self):
         """
         Iterates through all Markdown (.md) files in a specified notes_directory and parses their contents.
 
@@ -201,15 +173,10 @@ class FileParser:
 
         all_files = []
 
-        for file_name in os.listdir(notes_directory):
-
-            file_path = os.path.join(notes_directory, file_name)
-            if os.path.isfile(file_path) and file_name.endswith(NOTE_EXTENSION) and not file_name.endswith(
-                    EXCLUSIVE_EXTENSION):
-                # with open(file_path, 'r', encoding=ENCODING) as file:
-                file_content = parse_note(file_path)
-                file_content["file_name"] = file_name
-                all_files.append(file_content)
+        for file_name in self.file_names:
+            file_content = self.parse_note(file_path)
+            file_content["file_name"] = file_name
+            all_files.append(file_content)
 
         return all_files
 
