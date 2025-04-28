@@ -14,10 +14,39 @@ class FileParser:
     def __init__(self, notes_directory):
         self.notes_directory = notes_directory
         self.similar_notes = self.load_similar_notes(notes_directory)
-        self.file_names = self.load_file_names()
-        self.note_names = self.load_note_names()
+
+        self.file_names = []
+        self.load_file_names()
+
+        self.note_names = []
+        self.load_note_names()
 
     def load_file_names(self):
+        """
+        Loads file names from the specified notes directory. Filters files based on specific
+        extensions, ensuring that only relevant Markdown files are included.
+
+        The method clears the existing list of file names, iterates through the content of
+        the directory, and populates the list with eligible file names. Additionally, it
+        supports returning the list of file names directly.
+
+        Returns:
+            list: A list of file names that match the specified criteria.
+        """
+        # clear the file names just in case
+        self.file_names = []
+
+
+        # loop through the directory and find all notes
+        for filename in os.listdir(self.notes_directory):
+            # Process Markdown files only, and exclude similar files that also end with '.md'
+            if filename.endswith(NOTE_EXTENSION) and not filename.endswith(EXCLUSIVE_EXTENSION):
+                file_path = os.path.join(self.notes_directory, filename)
+                self.file_names.append(filename)
+
+        # if called by an outside class it may be nice to immediately return the file_names
+
+        return self.file_names
 
     def load_note_names(self):
 
