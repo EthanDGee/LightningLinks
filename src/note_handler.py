@@ -101,7 +101,8 @@ class FileParser:
                 with open(file_path, 'a', encoding=ENCODING) as file:
                     file.write("\n")
 
-    def parse_note(self, file_path: str):
+    @staticmethod
+    def parse_note(file_path: str):
         """
         Parses the contents of a Markdown file to extract specific sections: links, tags, body, and smart links.
 
@@ -180,6 +181,7 @@ class FileParser:
 
         return all_files
 
+    @staticmethod
     def format_inline_lighting_links(file_content, num_lightning_links):
         # join a specified number of similar notes into a line
         # format middle
@@ -191,7 +193,7 @@ class FileParser:
 
         return formatted_links
 
-    def write_to_file(notes_directory, file_content, num_lightning_links):
+    def write_to_file(self, file_content, num_lightning_links):
         """
         Writes content to a specified file in the given notes_directory, appending formatted
         links and tags, and incorporating a specified number of "lightning links"
@@ -213,7 +215,7 @@ class FileParser:
         :type num_lightning_links: int
         :return: None
         """
-        with open(f"{notes_directory}{file_content['file_name']}", 'w', encoding=ENCODING) as file:
+        with open(f"{self.notes_directory}{file_content['file_name']}", 'w', encoding=ENCODING) as file:
             file.write(file_content["links"])
             file.write("\n")
             file.write(file_content["tags"])
@@ -227,9 +229,10 @@ class FileParser:
             file.write(LIGHTNING_LINKS_HEADER + "\n")
 
             # add all notes in one line
-            file.write(format_inline_lighting_links(file_content, num_lightning_links))
+            file.write(self.format_inline_lighting_links(file_content, num_lightning_links))
 
-    def save_similar_notes(notes_directory, notes):
+
+    def save_similar_notes(self, notes):
         """
         Saves the mapping of similar notes to a JSON file in the specified notes notes_directory.
         This function takes a list of notes where each note is expected to have a file name
@@ -246,10 +249,10 @@ class FileParser:
 
         """
         similar_notes_dict = {note["file_name"]: note["similar_notes"] for note in notes}
-        with open(f"{notes_directory}.obsidian/similar_notes.json", 'w', encoding=ENCODING) as file:
+        with open(f"{self.notes_directory}.obsidian/similar_notes.json", 'w', encoding=ENCODING) as file:
             json.dump(similar_notes_dict, file, indent=4)
 
-    def load_similar_notes(notes_directory):
+    def load_similar_notes(self):
         """
         Loads a JSON file containing similar notes from the given notes notes_directory and
         returns its content as a dictionary. The file is expected to be located
@@ -262,11 +265,11 @@ class FileParser:
         :return: A dictionary representing the contents of the `similar_notes.json` file.
         :rtype: dict
         """
-        with open(f"{notes_directory}.obsidian/similar_notes.json", 'r', encoding=ENCODING) as file:
+        with open(f"{self.notes_directory}.obsidian/similar_notes.json", 'r', encoding=ENCODING) as file:
             similar_notes_dict = json.load(file)
         return similar_notes_dict
 
-    def get_current_note(notes_directory):
+    def get_current_note(self):
         """
         Fetches the most recently opened note file in an Obsidian workspace.
 
@@ -286,7 +289,7 @@ class FileParser:
         :raises KeyError: If the "lastOpenFiles" key is not found in the loaded JSON
             data.
         """
-        with open(f"{notes_directory}.obsidian/workspace.json", 'r', encoding=ENCODING) as file:
+        with open(f"{self.notes_directory}.obsidian/workspace.json", 'r', encoding=ENCODING) as file:
             last_open = json.load(file)
 
         return last_open["lastOpenFiles"][0]
