@@ -1,8 +1,6 @@
 import os
 import json
 
-from torchgen.gen_functionalization_type import return_from_mutable_noop_redispatch
-
 # final variables
 NOTE_EXTENSION = ".md"
 EXCLUSIVE_EXTENSION = ".excalidraw.md"
@@ -14,8 +12,15 @@ LINK_END = "]]"
 
 class FileParser:
     def __init__(self, notes_directory):
+        """
+        Initializes the class instance with a directory containing notes, sets up structures
+        for note management, and initializes file and note name lists.
+
+        Args:
+            notes_directory (str): The directory path where note files are stored.
+        """
         self.notes_directory = notes_directory
-        self.similar_notes = self.load_similar_notes(notes_directory)
+        self.similar_notes = self.load_similar_notes()
 
         # these are useful for cases when file data needs to be loaded
         self.file_names = []
@@ -42,9 +47,9 @@ class FileParser:
 
         # loop through the directory and find all notes
         for filename in os.listdir(self.notes_directory):
-            # Process Markdown files only, and exclude similar files that also end with '.md'
+            # Process Markdown files only and exclude similar files that also end with '.md'
             if filename.endswith(NOTE_EXTENSION) and not filename.endswith(EXCLUSIVE_EXTENSION):
-                file_path = os.path.join(self.notes_directory, filename)
+                filename = os.path.join(self.notes_directory, filename)
                 self.file_names.append(filename)
 
         # if called by an outside program, it may be nice to immediately return the file_names
@@ -72,7 +77,7 @@ class FileParser:
         for filename in os.listdir(self.notes_directory):
             # Process Markdown files only and exclude similar files that also end with '.md'
             if filename.endswith(NOTE_EXTENSION) and not filename.endswith(EXCLUSIVE_EXTENSION):
-                note_name = filename.replace(NOTE_EXTENSION, "")
+                filename = filename.replace(NOTE_EXTENSION, "")
                 self.note_names.append(filename)
 
         # return note names for a case when it's called by an outside program
@@ -82,7 +87,7 @@ class FileParser:
         """
         Ensures proper formatting of Markdown files in the specified notes_directory. This function checks if the Markdown
         files in the notes_directory end properly with an empty line so that if they don't have existing lightning links
-        sections in the notes there will be a proper place for them. If the formatting conditions are not met, it appends a
+        sections in the notes, there will be a proper place for them. If the formatting conditions are not met, it appends a
         trailing empty line to the file.
 
 
@@ -95,7 +100,7 @@ class FileParser:
             with open(file_path, 'r', encoding=ENCODING) as file:
                 lines = file.readlines()
 
-            # Check if the file is not empty and does not end with an empty line, or if its already formatted
+            # Check if the file is not empty and does not end with an empty line, or if it's already formatted
             if len(lines) != 0 and not lines[-1].strip() == "" and lines[-2].strip() != LIGHTNING_LINKS_HEADER:
                 # Append an empty line
                 with open(file_path, 'a', encoding=ENCODING) as file:
@@ -113,8 +118,8 @@ class FileParser:
             dict: A dictionary containing the following keys:
                 - 'links': Links extracted from the header (as a newline-separated string).
                 - 'tags': Tags extracted (prefixed with '#', as a single string).
-                - 'body': Main content of the file (excluding smart links section).
-                - 'smart_links': Smart Links section content (if any, otherwise empty string).
+                - 'body': Main content of the file (excluding a smart links section).
+                - 'Smart_links': Smart Links section content (if any, otherwise empty string).
         """
 
         # Dictionary to store the parsed note content
@@ -164,18 +169,16 @@ class FileParser:
         """
         Iterates through all Markdown (.md) files in a specified notes_directory and parses their contents.
 
-        Args:
-            notes_directory (str): Path to the notes_directory containing Markdown files.
 
         Returns:
             dict: A dictionary where each key is a Markdown file name, and its value is a parsed content
-                  dictionary (output of parse_note) extended with a 'file_name' key .
+                  dictionary (output of parse_note) extended with a 'file_name' key.
         """
 
         all_files = []
 
         for file_name in self.file_names:
-            file_content = self.parse_note(file_path)
+            file_content = self.parse_note(file_name)
             file_content["file_name"] = file_name
             all_files.append(file_content)
 
@@ -199,20 +202,18 @@ class FileParser:
         links and tags, and incorporating a specified number of "lightning links"
         based on a list of similar notes.
 
-        :param notes_directory: The notes_directory path where the file will be created or overwritten.
-        :type notes_directory: str
         :param file_content: A dictionary containing the content to be written to the file.
             It is expected to have the following keys:
                 - "file_name" (str): Name of the target file.
                 - "links" (str): Links to be written in the file.
                 - "tags" (str): Tags to be written in the file.
                 - "body" (str): Body content to be written in the file.
-                - "similar_notes" (list[str]): A list of similar note file names
+                - "Similar_notes" (list[str]): A list of similar note file names
                   used to generate lightning links.
-        :type file_content: dict
+        :type file_content: Dict
         :param num_lightning_links: The number of similar notes to include as lightning links in
             the file's content.
-        :type num_lightning_links: int
+        :type num_lightning_links: Int
         :return: None
         """
         with open(f"{self.notes_directory}{file_content['file_name']}", 'w', encoding=ENCODING) as file:
@@ -240,12 +241,9 @@ class FileParser:
         each note's file name to its similar notes and writes this dictionary into a JSON
         file named `similar_notes.json` inside a specified notes_directory.
 
-        :param notes_directory: The path to the notes_directory where the JSON file should be saved.
-        :type notes_directory: str
-
         :param notes: A list of dictionaries, where each dictionary represents a note and
                       should contain `file_name` (str) and `similar_notes` (list) fields.
-        :type notes: list[dict]
+        :type notes: List[dict]
 
         """
         similar_notes_dict = {note["file_name"]: note["similar_notes"] for note in notes}
@@ -259,11 +257,8 @@ class FileParser:
         within the `.obsidian` subfolder of the specified notes_directory and named
         `similar_notes.json`.
 
-        :param notes_directory: The path to the notes_directory containing the `.obsidian` folder
-            with the `similar_notes.json` file.
-        :type notes_directory: str
         :return: A dictionary representing the contents of the `similar_notes.json` file.
-        :rtype: dict
+        :rtype: Dict
         """
         with open(f"{self.notes_directory}.obsidian/similar_notes.json", 'r', encoding=ENCODING) as file:
             similar_notes_dict = json.load(file)
@@ -277,11 +272,8 @@ class FileParser:
         to determine the most recently accessed note in the Obsidian workspace. It
         parses the JSON data to extract the value from the "lastOpenFiles" key.
 
-        :param notes_directory: The notes_directory path containing the Obsidian `.obsidian`
-            folder.
-        :type notes_directory: str
         :return: The path to the most recently opened note.
-        :rtype: str
+        :rtype: Str
         :raises FileNotFoundError: If the `workspace.json` file does not exist at
             the specified path.
         :raises json.JSONDecodeError: If the `workspace.json` file content cannot
