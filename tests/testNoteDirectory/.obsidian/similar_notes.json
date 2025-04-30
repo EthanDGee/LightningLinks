@@ -1,0 +1,14 @@
+{
+  "contains alias.md": [
+    "example note.md",
+    "invalid ending.md"
+  ],
+  "example note.md": [
+    "contains alias.md",
+    "invalid ending.md"
+  ],
+  "invalid ending.md": [
+    "contains alias.md",
+    "example note.md"
+  ]
+}

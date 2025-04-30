@@ -1,5 +1,6 @@
 import unittest
 from src.lightning_links_creator import find_min_of_indexes, get_top_n_similarities_from_row, get_all_top_n_similarities
+from src.note_handler import FileParser
 import torch
 
 
@@ -153,6 +154,35 @@ class TestGetAllTopNSimilarities(unittest.TestCase):
             row.sort()
 
         self.assertEqual(expected, result)
+
+
+class TestFileParser(unittest.TestCase):
+    def setUp(self):
+
+        # initialize the file parser
+        self.test_vault = 'testNoteDirectory/'
+        self.file_parser = FileParser(self.test_vault)
+
+    def test_get_note_names(self):
+
+        # file names are calculated during the __init__ process so we are just checking validity
+
+        # ensure that the non-valid notes are not part of the project
+        self.assertNotIn('invalid.png', self.file_parser.note_names)
+        self.assertNotIn('exampleDrawing.excalidraw.md', self.file_parser.note_names)
+        # .md would be removed if it is considered valid
+        self.assertNotIn('exampleDrawing.excalidraw', self.file_parser.note_names)
+
+        # check for the valid notes
+        self.assertIn('contains alias', self.file_parser.note_names)
+        self.assertIn('example note', self.file_parser.note_names)
+        self.assertIn('invalid ending', self.file_parser.note_names)
+
+        # check that the valid notes do not have the file extension
+        self.assertNotIn('contains alias.md', self.file_parser.note_names)
+        self.assertNotIn('example note.md', self.file_parser.note_names)
+        self.assertNotIn('invalid ending.md', self.file_parser.note_names)
+
 
 
 if __name__ == '__main__':
