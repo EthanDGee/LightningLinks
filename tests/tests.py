@@ -1,33 +1,7 @@
 import unittest
-from src.lightning_links_creator import find_min_of_indexes, get_top_n_similarities_from_row, get_all_top_n_similarities
+from src.lightning_links_creator import get_top_n_similarities_from_row, get_all_top_n_similarities
 from src.note_handler import FileParser
 import torch
-
-
-class TestFindMinFromIndexes(unittest.TestCase):
-    def test_single_element(self):
-        # Single element in indexes
-        self.assertEqual(find_min_of_indexes([2], [4, 5, 1, 7]), 2)
-        self.assertEqual(find_min_of_indexes([0], [8, 6, 2, 1]), 0)
-        self.assertEqual(find_min_of_indexes([3], [1, 3, 5, 0]), 3)
-
-    def test_multiple_elements(self):
-        # Multiple elements in indexes
-        self.assertEqual(find_min_of_indexes([1, 3, 4], [8, 3, 6, 2, 5]), 3)
-        self.assertEqual(find_min_of_indexes([0, 2, 3], [4, 7, 2, 1]), 3)
-        self.assertEqual(find_min_of_indexes([2, 5, 6], [9, 12, 7, 15, 10, 3, 2]), 6)
-
-    def test_min_at_start(self):
-        # Minimum at the start of indexes
-        self.assertEqual(find_min_of_indexes([0, 2, 4], [1, 7, 3, 9, 10]), 0)
-        self.assertEqual(find_min_of_indexes([1, 2, 3], [3, 5, 9, 12]), 1)
-        self.assertEqual(find_min_of_indexes([0, 3, 4], [2, 7, 9, 3, 8]), 0)
-
-    def test_min_at_end(self):
-        # Minimum at the end of indexes
-        self.assertEqual(find_min_of_indexes([1, 3, 5, 6], [9, 12, 8, 15, 10, 6, 3]), 6)
-        self.assertEqual(find_min_of_indexes([0, 4, 5, 8], [8, 12, 15, 18, 3, 5, 6, 7, 1]), 8)
-        self.assertEqual(find_min_of_indexes([2, 3, 7], [9, 8, 5, 10, 11, 15, 18, 3]), 7)
 
 
 class TestGetTopNSimilaritiesFromRow(unittest.TestCase):
@@ -67,7 +41,7 @@ class TestGetTopNSimilaritiesFromRow(unittest.TestCase):
         num_similarities = 3
         result = get_top_n_similarities_from_row(row, num_similarities)
         result = sorted(result)
-        expected = [0, 1, 2]  # Indices of top 3 (least negative values)
+        expected = [0, 1, 2]  # Indices of the top 3 (least negative values)
         self.assertEqual(expected, result)
 
     def test_zero_similarities(self):
@@ -196,7 +170,6 @@ class TestFileParser(unittest.TestCase):
             with open(f'{self.test_vault}{file_name}', 'w') as file:
                 file.writelines(self.original_file_lines[file_name])
 
-
     def reload_files(self):
         # a method to reload the files from the current notes directory to test modifications made to the files.
 
@@ -205,7 +178,7 @@ class TestFileParser(unittest.TestCase):
                 self.current_file_lines[file_name] = file.readlines()
 
     def test_get_note_names(self):
-        # file names are calculated during the __init__ process so we are just checking validity
+        # file names are calculated during the __init__ process, so we are just checking validity
 
         # ensure that the non-valid notes are not part of the project
         self.assertNotIn('invalid.png', self.file_parser.note_names)
@@ -226,7 +199,7 @@ class TestFileParser(unittest.TestCase):
         self.assertNotIn('valid ending no lightning links.md', self.file_parser.note_names)
 
     def test_get_file_names(self):
-        # file names are calculated during the __init__ process so we are just checking validity
+        # file names are calculated during the __init__ process, so we are just checking validity
 
         # ensure that the non-valid notes are not part of the project
         self.assertNotIn(f'{self.test_vault}invalid.png', self.file_parser.file_names)

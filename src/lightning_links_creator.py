@@ -45,35 +45,6 @@ def extract_bodies(notes_list):
     return notes_sentences
 
 
-def find_min_of_indexes(indexes, row):
-    """
-    Finds the minimum value among specified indexes in a given row and returns the
-    index corresponding to the minimum value, along with its position in the
-    indexes list.
-
-    The function iterates through the provided indexes, compares their corresponding
-    values in the row, and identifies the index with the smallest value. Additionally,
-    it identifies the position in the original `indexes` list of this minimum index.
-
-    :param indexes: A list of integers representing the indices to check in the row.
-    :param row: A list of numerical values representing the row to search within.
-    :return: A tuple containing:
-        - The index in the row corresponding to the minimum value (first element),
-        - The position of the minimum index in the input `indexes` list (second element).
-    """
-    min_index = indexes[0]
-    index_of_min_index = 0
-    min_value = row[min_index]
-
-    for i in range(1, len(indexes)):
-        current = row[indexes[i]]
-        if current < min_value:
-            min_index = indexes[i]
-            index_of_min_index = i
-            min_value = current
-
-    return min_index, index_of_min_index
-
 
 def get_top_n_similarities_from_row(row, num_similarities: int = 10):
     """
