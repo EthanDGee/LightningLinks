@@ -180,12 +180,30 @@ class TestFileParser(unittest.TestCase):
 
         self.reset_files()
 
+
+        # create a placeholder that will be used to store the current state of the files after each test
+        self.current_file_lines = {
+            'contains alias.md': [],
+            'example note.md': [],
+            'invalid ending.md': [],
+            'valid ending no lightning links.md': [],
+            '.obsidian/similar_notes.json': []
+        }
+
     def reset_files(self):
         # A method to reset the files to their original state using the stored data from setUp.
 
         for file_name in self.original_file_lines.keys():
             with open(f'{self.test_vault}{file_name}', 'w') as file:
                 file.writelines(self.original_file_lines[file_name])
+
+
+    def reload_files(self):
+        # a method to reload the files from the current notes directory to test modifications made to the files.
+
+        for file_name in self.current_file_lines.keys():
+            with open(f'{self.test_vault}{file_name}', 'r') as file:
+                self.current_file_lines[file_name] = file.readlines()
 
     def test_get_note_names(self):
         # file names are calculated during the __init__ process so we are just checking validity
