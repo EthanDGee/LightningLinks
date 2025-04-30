@@ -158,13 +158,27 @@ class TestGetAllTopNSimilarities(unittest.TestCase):
 
 class TestFileParser(unittest.TestCase):
     def setUp(self):
-
         # initialize the file parser
         self.test_vault = 'testNoteDirectory/'
         self.file_parser = FileParser(self.test_vault)
 
-    def test_get_note_names(self):
+        # get all test file lines so that they can be safely rewritten to their original state after the tests
+        # that modify the files are run.
 
+        self.original_file_lines = {
+            'contains alias.md': [],
+            'example note.md': [],
+            'invalid ending.md': [],
+            'valid ending no lightning links.md': [],
+            '.obsidian/similar_notes.json': []
+        }
+
+        # loop through all files in the test vault and save their lines to the dictionary
+        for file_name in self.original_file_lines.keys():
+            with open(f'{self.test_vault}{file_name}', 'r') as file:
+                self.original_file_lines[file_name] = file.readlines()
+
+    def test_get_note_names(self):
         # file names are calculated during the __init__ process so we are just checking validity
 
         # ensure that the non-valid notes are not part of the project
@@ -177,11 +191,13 @@ class TestFileParser(unittest.TestCase):
         self.assertIn('contains alias', self.file_parser.note_names)
         self.assertIn('example note', self.file_parser.note_names)
         self.assertIn('invalid ending', self.file_parser.note_names)
+        self.assertIn('valid ending no lightning links', self.file_parser.note_names)
 
         # check that the valid notes do not have the file extension
         self.assertNotIn('contains alias.md', self.file_parser.note_names)
         self.assertNotIn('example note.md', self.file_parser.note_names)
         self.assertNotIn('invalid ending.md', self.file_parser.note_names)
+        self.assertNotIn('valid ending no lightning links.md', self.file_parser.note_names)
 
     def test_get_file_names(self):
         # file names are calculated during the __init__ process so we are just checking validity
@@ -196,11 +212,13 @@ class TestFileParser(unittest.TestCase):
         self.assertIn(f'{self.test_vault}contains alias.md', self.file_parser.file_names)
         self.assertIn(f'{self.test_vault}example note.md', self.file_parser.file_names)
         self.assertIn(f'{self.test_vault}invalid ending.md', self.file_parser.file_names)
+        self.assertIn(f'{self.test_vault}valid ending no lightning links.md', self.file_parser.file_names)
 
         # check that notes do not remove the file extension
         self.assertNotIn(f'{self.test_vault}contains alias', self.file_parser.file_names)
         self.assertNotIn(f'{self.test_vault}example note', self.file_parser.file_names)
         self.assertNotIn(f'{self.test_vault}invalid ending', self.file_parser.file_names)
+        self.assertNotIn(f'{self.test_vault}valid ending no lightning links', self.file_parser.file_names)
 
 
 if __name__ == '__main__':
