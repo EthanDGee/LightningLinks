@@ -139,7 +139,7 @@ class FileParser:
         """
 
         # Dictionary to store the parsed note content
-        note_info = {"links": "", "tags": "", "body": "", "smart_links": ""}
+        note_info = {"links": "", "tags": "", "body": "", "smart_links": "", "YAML": ""}
 
         # Open the file and iterate through its contents
         with open(file_path, 'r', encoding=ENCODING) as file:

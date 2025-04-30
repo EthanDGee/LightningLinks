@@ -171,7 +171,7 @@ class TestFileParser(unittest.TestCase):
 
         self.reload_files()
 
-        # expected file contents
+        # expected file contents for example note
         self.example_body = (
             "\nThe [[science]] of computers from how they work, how to use them, and the process of evaluating new better "
             "ways to devise solutions to problems with there assistance.\n"
@@ -185,6 +185,55 @@ class TestFileParser(unittest.TestCase):
             "[[hardware.md]]     "
             "[[computer storage.md]]"
         )
+        self.example_yaml = "---\nAlias:\n  - CS\n---\n"
+
+        # Create a dictionary mapping file names to their expected values
+        # This reduces redundancy by centralizing the expected values
+        self.expected_values = {
+            'example note.md': {
+                'links': self.example_links,
+                'tags': self.example_tags,
+                'body': self.example_body,
+                'smart_links': self.example_smart_links,
+                'yaml': ""
+            },
+            'contains YAML.md': {
+                'links': self.example_links,
+                'tags': self.example_tags,
+                'body': self.example_body,
+                'smart_links': self.example_smart_links,
+                'yaml': self.example_yaml
+            },
+            'invalid ending.md': {
+                'links': self.example_links,
+                'tags': self.example_tags,
+                'body': self.example_body,
+                'smart_links': "",
+                'yaml': ""
+            },
+            'no headers.md': {
+                'links': "",
+                'tags': self.example_tags,
+                'body': self.example_body,
+                'smart_links': self.example_smart_links,
+                'yaml': ""
+            },
+            'no tags with header.md': {
+                'links': self.example_links,
+                'tags': "",
+                # adds the header to the body
+                'body': f"\n# BEEP BEEP BOOP BOOP\n\n{self.example_body}",
+                'smart_links': self.example_smart_links,
+                'yaml': ""
+            },
+            'valid ending no lightning links.md': {
+                'links': self.example_links,
+                'tags': self.example_tags,
+                'body': self.example_body,
+                'smart_links': "",
+                'yaml': ""
+            }
+        }
 
     def reset_files(self):
         # A method to reset the files to their original state using the stored data from setUp.
@@ -271,16 +320,59 @@ class TestFileParser(unittest.TestCase):
             self.current_file_lines['invalid ending.md'][-1]
         )
 
+    def _test_parse_note(self, file_name):
+        """Helper method to test parse_note for a given file with expected values.
+
+        If individual expected values are not provided, it will use the values from self.expected_values.
+        """
+        contents = self.file_parser.parse_note(f'{self.test_vault}{file_name}')
+
+        expected = None
+        # load in expected values and run test to see if they're there
+        if file_name in self.expected_values:
+            expected = self.expected_values[file_name]
+
+        self.assertIsNotNone(expected)
+
+        self.assertEqual(expected["links"], contents["links"])
+        self.assertEqual(expected["tags"], contents["tags"])
+        self.assertEqual(expected["body"], contents["body"])
+        self.assertEqual(expected["smart_links"], contents["smart_links"])
+        self.assertEqual(expected["yaml"], contents["YAML"])
+
     def test_valid_parse_note(self):
         # tests parse for the valid note
+        self._test_parse_note('example note.md')
 
-        contents = self.file_parser.parse_note(f'{self.test_vault}example note.md')
+    def test_parse_note_contains_yaml(self):
+        # tests parse for the note with YAML frontmatter
+        self._test_parse_note('contains YAML.md')
 
-        self.assertEqual(self.example_links, contents["links"])
-        self.assertEqual(self.example_tags, contents["tags"])
-        self.assertEqual(self.example_body, contents["body"])
-        self.assertEqual(self.example_smart_links, contents["smart_links"])
-        self.assertEqual("", contents["YAML"])
+    def test_parse_note_invalid_ending(self):
+        # tests parse for the note with invalid ending
+        self._test_parse_note('invalid ending.md')
+
+    def test_parse_note_no_headers(self):
+        # tests parse for the note with no headers
+        self._test_parse_note('no headers.md')
+
+    def test_parse_note_no_tags_with_header(self):
+        # tests parse for the note with no tags but with a header
+        self._test_parse_note('no tags with header.md')
+
+    def test_parse_note_valid_ending_no_lightning_links(self):
+        # tests parse for the note with valid ending but no lightning links
+        self._test_parse_note('valid ending no lightning links.md')
+
+    def test_parse_all_notes(self):
+        """Test parse_note for all note files except 'multiple sections note.md' and 'single link.md'."""
+        # Exclude 'multiple sections note.md' and 'single link.md' as per requirements
+        excluded_files = ['multiple sections note.md', 'single link.md']
+
+        for file_name in self.expected_values.keys():
+            if file_name not in excluded_files:
+                with self.subTest(file_name=file_name):
+                    self._test_parse_note(file_name)
 
 
 if __name__ == '__main__':
