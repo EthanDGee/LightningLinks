@@ -271,8 +271,8 @@ class TestFileParser(unittest.TestCase):
 
         # check to see if only the ending newline was added to the invalid ending file
         self.assertEqual(
-            self.original_file_lines['invalid ending.md'] + ['\n'],
-            self.current_file_lines['invalid ending.md']
+            self.original_file_lines['invalid ending.md'][-1] + '\n',
+            self.current_file_lines['invalid ending.md'][-1]
         )
 
 

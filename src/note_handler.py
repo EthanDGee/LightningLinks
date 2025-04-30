@@ -94,6 +94,22 @@ class FileParser:
         :return: None
         """
 
+        def check_last_two_lines(lines):
+            # helper function that checks the last two lines of a file for proper formatting and returns a boolean
+            # indicating whether they need to be changed.
+
+            # has header in first line
+            if lines[0].strip() == LIGHTNING_LINKS_HEADER:
+                return False
+
+            # has new line at the end
+            elif lines[1][-1] == "\n":
+                return False
+
+
+
+            return True
+
         # loop through all note files
         for file_path in self.file_names:
             # Read the file's contents
@@ -101,10 +117,10 @@ class FileParser:
                 lines = file.readlines()
 
             # Check if the file is not empty and does not end with an empty line, or if it's already formatted
-            if len(lines) != 0 and not lines[-1].strip() == "" and lines[-2].strip() != LIGHTNING_LINKS_HEADER:
+            if len(lines) != 0 and check_last_two_lines(lines[-2:]):
                 # Append an empty line
                 with open(file_path, 'a', encoding=ENCODING) as file:
-                    file.write("\n")
+                    file.write('\n')
 
     @staticmethod
     def parse_note(file_path: str):
@@ -231,7 +247,6 @@ class FileParser:
 
             # add all notes in one line
             file.write(self.format_inline_lighting_links(file_content, num_lightning_links))
-
 
     def save_similar_notes(self, notes):
         """
