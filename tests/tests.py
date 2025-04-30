@@ -178,9 +178,6 @@ class TestFileParser(unittest.TestCase):
             with open(f'{self.test_vault}{file_name}', 'r') as file:
                 self.original_file_lines[file_name] = file.readlines()
 
-        self.reset_files()
-
-
         # create a placeholder that will be used to store the current state of the files after each test
         self.current_file_lines = {
             'contains alias.md': [],
@@ -189,6 +186,8 @@ class TestFileParser(unittest.TestCase):
             'valid ending no lightning links.md': [],
             '.obsidian/similar_notes.json': []
         }
+
+        self.reload_files()
 
     def reset_files(self):
         # A method to reset the files to their original state using the stored data from setUp.
@@ -246,6 +245,35 @@ class TestFileParser(unittest.TestCase):
         self.assertNotIn(f'{self.test_vault}example note', self.file_parser.file_names)
         self.assertNotIn(f'{self.test_vault}invalid ending', self.file_parser.file_names)
         self.assertNotIn(f'{self.test_vault}valid ending no lightning links', self.file_parser.file_names)
+
+    def test_ensure_proper_endings(self):
+        # A test that ensures that the ensure proper endings method works as intended. This is done by checking
+        # that the proper ending newline is only added to the file if it is missing. It also makes sure that
+        # the files are not modified if they have a correct ending.
+
+        # call function and reload the contents of files
+        self.file_parser.ensure_proper_endings()
+        self.reload_files()
+        # reset files to the original state after the file changes have been loaded
+        self.reset_files()
+
+        # check to see if any of the valid files have been unnecessarily edited
+
+        valid_files = list(self.original_file_lines.keys())
+        valid_files.remove('.obsidian/similar_notes.json')
+        valid_files.remove('invalid ending.md')
+
+        for file_name in valid_files:
+            self.assertEqual(self.original_file_lines[file_name], self.current_file_lines[file_name])
+
+        # check to see if the invalid ending file was modified
+        self.assertNotEqual(self.original_file_lines['invalid ending.md'], self.current_file_lines['invalid ending.md'])
+
+        # check to see if only the ending newline was added to the invalid ending file
+        self.assertEqual(
+            self.original_file_lines['invalid ending.md'] + ['\n'],
+            self.current_file_lines['invalid ending.md']
+        )
 
 
 if __name__ == '__main__':
