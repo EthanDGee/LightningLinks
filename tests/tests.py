@@ -140,10 +140,14 @@ class TestFileParser(unittest.TestCase):
         # that modify the files are run.
 
         self.original_file_lines = {
-            'contains alias.md': [],
+            'contains YAML.md': [],
             'example note.md': [],
             'invalid ending.md': [],
             'valid ending no lightning links.md': [],
+            'multiple sections note.md': [],
+            'no headers.md': [],
+            'single link.md': [],
+            'no tags with header.md': [],
             '.obsidian/similar_notes.json': []
         }
 
@@ -154,14 +158,33 @@ class TestFileParser(unittest.TestCase):
 
         # create a placeholder that will be used to store the current state of the files after each test
         self.current_file_lines = {
-            'contains alias.md': [],
+            'contains YAML.md': [],
             'example note.md': [],
             'invalid ending.md': [],
             'valid ending no lightning links.md': [],
+            'multiple sections note.md': [],
+            'no headers.md': [],
+            'single link.md': [],
+            'no tags with header.md': [],
             '.obsidian/similar_notes.json': []
         }
 
         self.reload_files()
+
+        # expected file contents
+        self.example_body = (
+            "\nThe [[science]] of computers from how they work, how to use them, and the process of evaluating new better "
+            "ways to devise solutions to problems with there assistance.\n"
+        )
+        self.example_tags = "#computer-science #discrete-mathematics\n"
+        self.example_links = "[[science]]\n[[electronics]]\n"
+        self.example_smart_links = (
+            "[[Computer science isn't about computers.md]]     "
+            "[[accessibility in computer science.md]]     "
+            "[[Dijkstra.md]]     "
+            "[[hardware.md]]     "
+            "[[computer storage.md]]"
+        )
 
     def reset_files(self):
         # A method to reset the files to their original state using the stored data from setUp.
@@ -187,13 +210,13 @@ class TestFileParser(unittest.TestCase):
         self.assertNotIn('exampleDrawing.excalidraw', self.file_parser.note_names)
 
         # check for the valid notes
-        self.assertIn('contains alias', self.file_parser.note_names)
+        self.assertIn('contains YAML', self.file_parser.note_names)
         self.assertIn('example note', self.file_parser.note_names)
         self.assertIn('invalid ending', self.file_parser.note_names)
         self.assertIn('valid ending no lightning links', self.file_parser.note_names)
 
         # check that the valid notes do not have the file extension
-        self.assertNotIn('contains alias.md', self.file_parser.note_names)
+        self.assertNotIn('contains YAML.md', self.file_parser.note_names)
         self.assertNotIn('example note.md', self.file_parser.note_names)
         self.assertNotIn('invalid ending.md', self.file_parser.note_names)
         self.assertNotIn('valid ending no lightning links.md', self.file_parser.note_names)
@@ -208,13 +231,13 @@ class TestFileParser(unittest.TestCase):
         self.assertNotIn(f'{self.test_vault}exampleDrawing.excalidraw', self.file_parser.file_names)
 
         # check that the valid notes paths with the proper file extension
-        self.assertIn(f'{self.test_vault}contains alias.md', self.file_parser.file_names)
+        self.assertIn(f'{self.test_vault}contains YAML.md', self.file_parser.file_names)
         self.assertIn(f'{self.test_vault}example note.md', self.file_parser.file_names)
         self.assertIn(f'{self.test_vault}invalid ending.md', self.file_parser.file_names)
         self.assertIn(f'{self.test_vault}valid ending no lightning links.md', self.file_parser.file_names)
 
         # check that notes do not remove the file extension
-        self.assertNotIn(f'{self.test_vault}contains alias', self.file_parser.file_names)
+        self.assertNotIn(f'{self.test_vault}contains YAML', self.file_parser.file_names)
         self.assertNotIn(f'{self.test_vault}example note', self.file_parser.file_names)
         self.assertNotIn(f'{self.test_vault}invalid ending', self.file_parser.file_names)
         self.assertNotIn(f'{self.test_vault}valid ending no lightning links', self.file_parser.file_names)
@@ -247,6 +270,18 @@ class TestFileParser(unittest.TestCase):
             self.original_file_lines['invalid ending.md'][-1] + '\n',
             self.current_file_lines['invalid ending.md'][-1]
         )
+
+    def test_valid_parse_note(self):
+        # tests parse for the valid note
+
+        contents = self.file_parser.parse_note(f'{self.test_vault}example note.md')
+
+        self.assertEqual(self.example_links, contents["links"])
+        self.assertEqual(self.example_tags, contents["tags"])
+        self.assertEqual(self.example_body, contents["body"])
+        self.assertEqual(self.example_links, contents["smart_links"])
+        self.assertEqual(self.example_smart_links, contents["YAML"])
+        self.assertEqual([f'{self.test_vault}example note.md'], self.file_parser.file_names)
 
 
 if __name__ == '__main__':
