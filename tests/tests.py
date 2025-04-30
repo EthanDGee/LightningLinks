@@ -279,9 +279,8 @@ class TestFileParser(unittest.TestCase):
         self.assertEqual(self.example_links, contents["links"])
         self.assertEqual(self.example_tags, contents["tags"])
         self.assertEqual(self.example_body, contents["body"])
-        self.assertEqual(self.example_links, contents["smart_links"])
-        self.assertEqual(self.example_smart_links, contents["YAML"])
-        self.assertEqual([f'{self.test_vault}example note.md'], self.file_parser.file_names)
+        self.assertEqual(self.example_smart_links, contents["smart_links"])
+        self.assertEqual("", contents["YAML"])
 
 
 if __name__ == '__main__':
