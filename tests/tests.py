@@ -178,6 +178,15 @@ class TestFileParser(unittest.TestCase):
             with open(f'{self.test_vault}{file_name}', 'r') as file:
                 self.original_file_lines[file_name] = file.readlines()
 
+        self.reset_files()
+
+    def reset_files(self):
+        # A method to reset the files to their original state using the stored data from setUp.
+
+        for file_name in self.original_file_lines.keys():
+            with open(f'{self.test_vault}{file_name}', 'w') as file:
+                file.writelines(self.original_file_lines[file_name])
+
     def test_get_note_names(self):
         # file names are calculated during the __init__ process so we are just checking validity
 
