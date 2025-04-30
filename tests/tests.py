@@ -183,6 +183,24 @@ class TestFileParser(unittest.TestCase):
         self.assertNotIn('example note.md', self.file_parser.note_names)
         self.assertNotIn('invalid ending.md', self.file_parser.note_names)
 
+    def test_get_file_names(self):
+        # file names are calculated during the __init__ process so we are just checking validity
+
+        # ensure that the non-valid notes are not part of the project
+        self.assertNotIn(f'{self.test_vault}invalid.png', self.file_parser.file_names)
+        self.assertNotIn(f'{self.test_vault}exampleDrawing.excalidraw.md', self.file_parser.file_names)
+        # .md would be removed if it is considered valid
+        self.assertNotIn(f'{self.test_vault}exampleDrawing.excalidraw', self.file_parser.file_names)
+
+        # check that the valid notes paths with the proper file extension
+        self.assertIn(f'{self.test_vault}contains alias.md', self.file_parser.file_names)
+        self.assertIn(f'{self.test_vault}example note.md', self.file_parser.file_names)
+        self.assertIn(f'{self.test_vault}invalid ending.md', self.file_parser.file_names)
+
+        # check that notes do not remove the file extension
+        self.assertNotIn(f'{self.test_vault}contains alias', self.file_parser.file_names)
+        self.assertNotIn(f'{self.test_vault}example note', self.file_parser.file_names)
+        self.assertNotIn(f'{self.test_vault}invalid ending', self.file_parser.file_names)
 
 
 if __name__ == '__main__':
