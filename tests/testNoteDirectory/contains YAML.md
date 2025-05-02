@@ -2,7 +2,6 @@
 Alias:
   - CS
 ---
-
 [[science]]
 [[electronics]]
 

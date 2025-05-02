@@ -8,7 +8,7 @@ LIGHTNING_LINKS_HEADER = "### Lightning Links"
 ENCODING = 'utf-8'
 LINK_START = "[["
 LINK_END = "]]"
-
+YAML_INDICATOR = "---\n"
 
 class FileParser:
     def __init__(self, notes_directory):
@@ -139,19 +139,34 @@ class FileParser:
         """
 
         # Dictionary to store the parsed note content
-        note_info = {"links": "", "tags": "", "body": "", "smart_links": ""}
+        note_info = {"links": "", "tags": "", "body": "", "smart_links": "", "YAML": ""}
 
         # Open the file and iterate through its contents
         with open(file_path, 'r', encoding=ENCODING) as file:
             current_line = file.readline()
+            # check for YAML and parse YAML if found
+
+            if current_line.strip == YAML_INDICATOR:
+                # move to the next line
+                current_line = file.readline() # this moves to avoid the start line in loop
+                while current_line:
+                    # YAML is ended by a second yaml indicator
+                    if current_line.strip()  == YAML_INDICATOR:
+                        break
+                    else:
+                        note_info["YAML"] += current_line
+
+                current_line = file.readline()
+                print(repr(current_line))
 
             # Parse links (header section)
-            while current_line:
-                if current_line.startswith(LINK_START) and current_line.endswith(LINK_END + "\n"):
-                    note_info["links"] += current_line
-                else:
-                    break  # Exit loop when we encounter a non-link line
-                current_line = file.readline()
+            if current_line.startswith(LINK_START):
+                while current_line:
+                    if current_line.startswith(LINK_START) and current_line.endswith(LINK_END + "\n"):
+                        note_info["links"] += current_line
+                    else:
+                        break  # Exit loop when we encounter a non-link line
+                    current_line = file.readline()
 
             # skip the blank line
             current_line = file.readline()

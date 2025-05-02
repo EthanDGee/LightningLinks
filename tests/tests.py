@@ -405,6 +405,17 @@ class TestFileParser(unittest.TestCase):
         self.assertEqual(expected_smart_links, contents["smart_links"])
         self.assertEqual(expected_yaml, contents["YAML"])
 
+    # def test_parse_all_notes(self):
+    #     """Test parse_note for all note files except 'multiple sections note.md' and 'single link.md'."""
+    #     # Exclude 'multiple sections note.md' and 'single link.md' as per requirements
+    #     excluded_files = ['multiple sections note.md', 'single link.md']
+    #
+    #     for file_name in self.expected_values.keys():
+    #         if file_name not in excluded_files:
+    #             with self.subTest(file_name=file_name):
+    #                 self._test_parse_note(file_name)
+
+
 
     def test_valid_parse_note(self):
         # tests parse for the valid note
@@ -448,15 +459,6 @@ class TestFileParser(unittest.TestCase):
         )
 
 
-    def test_parse_all_notes(self):
-        """Test parse_note for all note files except 'multiple sections note.md' and 'single link.md'."""
-        # Exclude 'multiple sections note.md' and 'single link.md' as per requirements
-        excluded_files = ['multiple sections note.md', 'single link.md']
-
-        for file_name in self.expected_values.keys():
-            if file_name not in excluded_files:
-                with self.subTest(file_name=file_name):
-                    self._test_parse_note(file_name)
 
 
 if __name__ == '__main__':
