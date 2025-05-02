@@ -177,7 +177,9 @@ class TestFileParser(unittest.TestCase):
             "ways to devise solutions to problems with there assistance.\n"
         )
         self.example_tags = "#computer-science #discrete-mathematics\n"
+        self.example_single_tag = "#computer-science\n"
         self.example_links = "[[science]]\n[[electronics]]\n"
+        self.example_header = "\n## BEEP BEEP BOOP BOOP\n\n"
         self.example_smart_links = (
             "[[Computer science isn't about computers.md]]     "
             "[[accessibility in computer science.md]]     "
@@ -185,69 +187,10 @@ class TestFileParser(unittest.TestCase):
             "[[hardware.md]]     "
             "[[computer storage.md]]"
         )
+        self.example_yaml = ""
 
-        # expected file contents for contains YAML
-        self.contains_yaml_body = (
-            "\nThe [[science]] of computers from how they work, how to use them, and the process of evaluating new better ways to devise solutions to problems with there assistance.\n"
-        )
-        self.contains_yaml_tags = "#computer-science #computer-science #discrete-mathematics\n"
-        self.contains_yaml_links = "[[science]]\n[[electronics]]\n"
-        self.contains_yaml_smart_links = (
-            "[[Computer science isn't about computers.md]]     "
-            "[[accessibility in computer science.md]]     "
-            "[[Dijkstra.md]]     "
-            "[[hardware.md]]     "
-            "[[computer storage.md]]"
-        )
         self.contains_yaml_yaml = "---\nAlias:\n  - CS\n---\n"
 
-        # expected file contents for invalid ending
-        self.invalid_ending_body = (
-            "\nThe [[science]] of computers from how they work, how to use them, and the process of evaluating new better ways to devise solutions to problems."
-        )
-        self.invalid_ending_tags = "#computer-science #discrete-mathematics\n"
-        self.invalid_ending_links = "[[science]]\n[[electronics]]\n"
-        self.invalid_ending_smart_links = ""
-        self.invalid_ending_yaml = ""
-
-        # expected file contents for no headers
-        self.no_headers_body = (
-            "The [[science]] of computers from how they work, how to use them, and the process of evaluating new better ways to devise solutions to problems with there assistance.\n"
-        )
-        self.no_headers_tags = "#computer-science #discrete-mathematics\n"
-        self.no_headers_links = ""
-        self.no_headers_smart_links = (
-            "[[Computer science isn't about computers.md]]     "
-            "[[accessibility in computer science.md]]     "
-            "[[Dijkstra.md]]     "
-            "[[hardware.md]]     "
-            "[[computer storage.md]]"
-        )
-        self.no_headers_yaml = ""
-
-        # expected file contents for no tags with header
-        self.no_tags_with_header_body = (
-            "# BEEP BEEP BOOP BOOP\n\nThe [[science]] of computers from how they work, how to use them, and the process of evaluating new better ways to devise solutions to problems with there assistance.\n"
-        )
-        self.no_tags_with_header_tags = ""
-        self.no_tags_with_header_links = "[[science]]\n[[electronics]]\n"
-        self.no_tags_with_header_smart_links = (
-            "[[Computer science isn't about computers.md]]     "
-            "[[accessibility in computer science.md]]     "
-            "[[Dijkstra.md]]     "
-            "[[hardware.md]]     "
-            "[[computer storage.md]]"
-        )
-        self.no_tags_with_header_yaml = ""
-
-        # expected file contents for valid ending no lightning links
-        self.valid_ending_no_lightning_links_body = (
-            "\nThe [[science]] of computers from how they work, how to use them, and the process of evaluating new better ways to devise solutions to problems with there assistance.\n"
-        )
-        self.valid_ending_no_lightning_links_tags = "#computer-science\n"
-        self.valid_ending_no_lightning_links_links = "[[science]]\n[[electronics]]"
-        self.valid_ending_no_lightning_links_smart_links = ""
-        self.valid_ending_no_lightning_links_yaml = ""
 
         # Create a dictionary mapping file names to their expected values
         # This reduces redundancy by centralizing the expected values
@@ -260,39 +203,39 @@ class TestFileParser(unittest.TestCase):
                 'yaml': ""
             },
             'contains YAML.md': {
-                'links': self.contains_yaml_links,
-                'tags': self.contains_yaml_tags,
-                'body': self.contains_yaml_body,
-                'smart_links': self.contains_yaml_smart_links,
+                'links': self.example_links,
+                'tags': self.example_tags,
+                'body': self.example_body,
+                'smart_links': self.example_smart_links,
                 'yaml': self.contains_yaml_yaml
             },
             'invalid ending.md': {
-                'links': self.invalid_ending_links,
-                'tags': self.invalid_ending_tags,
-                'body': self.invalid_ending_body,
-                'smart_links': self.invalid_ending_smart_links,
-                'yaml': self.invalid_ending_yaml
+                'links': self.example_links,
+                'tags': self.example_tags,
+                'body': self.example_body,
+                'smart_links': self.example_smart_links,
+                'yaml': self.example_yaml
             },
             'no headers.md': {
-                'links': self.no_headers_links,
-                'tags': self.no_headers_tags,
-                'body': self.no_headers_body,
-                'smart_links': self.no_headers_smart_links,
-                'yaml': self.no_headers_yaml
+                'links': "",
+                'tags': self.example_tags,
+                'body': self.example_body,
+                'smart_links': self.example_smart_links,
+                'yaml': self.example_yaml
             },
             'no tags with header.md': {
-                'links': self.no_tags_with_header_links,
-                'tags': self.no_tags_with_header_tags,
-                'body': self.no_tags_with_header_body,
-                'smart_links': self.no_tags_with_header_smart_links,
-                'yaml': self.no_tags_with_header_yaml
+                'links': self.example_links,
+                'tags': "",
+                'body': f"{self.example_header}{self.example_body}",
+                'smart_links': self.example_smart_links,
+                'yaml': self.example_yaml
             },
             'valid ending no lightning links.md': {
-                'links': self.valid_ending_no_lightning_links_links,
-                'tags': self.valid_ending_no_lightning_links_tags,
-                'body': self.valid_ending_no_lightning_links_body,
-                'smart_links': self.valid_ending_no_lightning_links_smart_links,
-                'yaml': self.valid_ending_no_lightning_links_yaml
+                'links': self.example_links,
+                'tags': self.example_single_tag,
+                'body': self.example_body.strip(), # there is no new line after the body
+                'smart_links': "",
+                'yaml': self.example_yaml
             }
         }
 

@@ -9,6 +9,7 @@ ENCODING = 'utf-8'
 LINK_START = "[["
 LINK_END = "]]"
 YAML_INDICATOR = "---\n"
+TAG_INDICATOR = "#"
 
 class FileParser:
     def __init__(self, notes_directory):
@@ -137,6 +138,21 @@ class FileParser:
                 - 'body': Main content of the file (excluding a smart links section).
                 - 'Smart_links': Smart Links section content (if any, otherwise empty string).
         """
+        def is_tag(line):
+            # checks to see if a given line is a tag, this a more complex check so it is brokwn into it's function
+
+            if line.startswith(TAG_INDICATOR):
+
+                # check to see if it's a header which would have a space or multiple hastags
+                if line.startswith(TAG_INDICATOR + " "): # H1 Header
+                    return False
+                elif line.startswith("##"):
+                    return False
+
+                 # all tests have been passed.
+                return True
+            else:
+                return False
 
         # Dictionary to store the parsed note content
         note_info = {"links": "", "tags": "", "body": "", "smart_links": "", "YAML": ""}
@@ -147,16 +163,14 @@ class FileParser:
             # check for YAML and parse YAML if found
 
             if current_line.strip == YAML_INDICATOR:
-                # move to the next line
-                current_line = file.readline() # this moves to avoid the start line in loop
+
                 while current_line:
                     # YAML is ended by a second yaml indicator
+                    note_info["YAML"] += current_line
+
                     if current_line.strip()  == YAML_INDICATOR:
                         break
-                    else:
-                        note_info["YAML"] += current_line
-
-                current_line = file.readline()
+                    current_line = file.readline()
                 print(repr(current_line))
 
             # Parse links (header section)
@@ -171,13 +185,13 @@ class FileParser:
             # skip the blank line
             current_line = file.readline()
             # Parse Tags
-
-            while current_line:
-                if current_line.startswith("#") and not current_line.startswith("# "):
-                    note_info["tags"] += current_line
-                else:
-                    break
-                current_line = file.readline()
+            if current_line.startswith(TAG_INDICATOR):
+                while current_line:
+                    if current_line.startswith("#") and not current_line.startswith("# "):
+                        note_info["tags"] += current_line
+                    else:
+                        break
+                    current_line = file.readline()
 
             # Parse body (main content)
             while current_line:
