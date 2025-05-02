@@ -245,7 +245,7 @@ class TestFileParser(unittest.TestCase):
             "\nThe [[science]] of computers from how they work, how to use them, and the process of evaluating new better ways to devise solutions to problems with there assistance.\n"
         )
         self.valid_ending_no_lightning_links_tags = "#computer-science\n"
-        self.valid_ending_no_lightning_links_links = "[[science]]\n[[electronics]]\n"
+        self.valid_ending_no_lightning_links_links = "[[science]]\n[[electronics]]"
         self.valid_ending_no_lightning_links_smart_links = ""
         self.valid_ending_no_lightning_links_yaml = ""
 
@@ -381,7 +381,7 @@ class TestFileParser(unittest.TestCase):
             self.current_file_lines['invalid ending.md'][-1]
         )
 
-    def _test_parse_note(self, file_name, expected_links=None, expected_tags=None, expected_body=None, expected_smart_links=None, expected_yaml=None):
+    def _test_parse_note(self, file_name):
         """Helper method to test parse_note for a given file with expected values.
 
         If individual expected values are not provided, it will use the values from self.expected_values.
@@ -390,85 +390,61 @@ class TestFileParser(unittest.TestCase):
 
         # If individual expected values are provided, use them
         # Otherwise, use the values from self.expected_values
-        if expected_links is None and file_name in self.expected_values:
-            expected = self.expected_values[file_name]
-            expected_links = expected['links']
-            expected_tags = expected['tags']
-            expected_body = expected['body']
-            expected_smart_links = expected['smart_links']
-            expected_yaml = expected['yaml']
+        self.assertIn(file_name, self.expected_values.keys())
 
+        expected = self.expected_values[file_name]
+        expected_links = expected['links']
+        expected_tags = expected['tags']
+        expected_body = expected['body']
+        expected_smart_links = expected['smart_links']
+        expected_yaml = expected['yaml']
 
+        self.assertEqual(expected_links, contents["links"])
+        self.assertEqual(expected_tags, contents["tags"])
+        self.assertEqual(expected_body, contents["body"])
+        self.assertEqual(expected_smart_links, contents["smart_links"])
+        self.assertEqual(expected_yaml, contents["YAML"])
 
-        self.assertEqual( expected_links, contents["links"])
-        self.assertEqual( expected_tags, contents["tags"])
-        self.assertEqual( expected_body, contents["body"])
-        self.assertEqual( expected_smart_links, contents["smart_links"])
-        self.assertEqual( expected_yaml, contents["YAML"])
 
     def test_valid_parse_note(self):
         # tests parse for the valid note
         self._test_parse_note(
-            'example note.md',
-            self.example_links,
-            self.example_tags,
-            self.example_body,
-            self.example_smart_links
+            'example note.md'
         )
+
 
     def test_parse_note_contains_yaml(self):
         # tests parse for the note with YAML frontmatter
         self._test_parse_note(
-            'contains YAML.md',
-            self.contains_yaml_links,
-            self.contains_yaml_tags,
-            self.contains_yaml_body,
-            self.contains_yaml_smart_links,
-            self.contains_yaml_yaml
+            'contains YAML.md'
         )
+
 
     def test_parse_note_invalid_ending(self):
         # tests parse for the note with invalid ending
         self._test_parse_note(
-            'invalid ending.md',
-            self.invalid_ending_links,
-            self.invalid_ending_tags,
-            self.invalid_ending_body,
-            self.invalid_ending_smart_links,
-            self.invalid_ending_yaml
+            'invalid ending.md'
         )
+
 
     def test_parse_note_no_headers(self):
         # tests parse for the note with no headers
         self._test_parse_note(
-            'no headers.md',
-            self.no_headers_links,
-            self.no_headers_tags,
-            self.no_headers_body,
-            self.no_headers_smart_links,
-            self.no_headers_yaml
+            'no headers.md'
         )
+
 
     def test_parse_note_no_tags_with_header(self):
         # tests parse for the note with no tags but with a header
         self._test_parse_note(
-            'no tags with header.md',
-            self.no_tags_with_header_links,
-            self.no_tags_with_header_tags,
-            self.no_tags_with_header_body,
-            self.no_tags_with_header_smart_links,
-            self.no_tags_with_header_yaml
+            'no tags with header.md'
         )
+
 
     def test_parse_note_valid_ending_no_lightning_links(self):
         # tests parse for the note with valid ending but no lightning links
         self._test_parse_note(
-            'valid ending no lightning links.md',
-            self.valid_ending_no_lightning_links_links,
-            self.valid_ending_no_lightning_links_tags,
-            self.valid_ending_no_lightning_links_body,
-            self.valid_ending_no_lightning_links_smart_links,
-            self.valid_ending_no_lightning_links_yaml
+            'valid ending no lightning links.md'
         )
 
 
