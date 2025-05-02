@@ -171,7 +171,7 @@ class TestFileParser(unittest.TestCase):
 
         self.reload_files()
 
-        # expected file contents
+        # expected file contents for example note
         self.example_body = (
             "\nThe [[science]] of computers from how they work, how to use them, and the process of evaluating new better "
             "ways to devise solutions to problems with there assistance.\n"
@@ -185,6 +185,116 @@ class TestFileParser(unittest.TestCase):
             "[[hardware.md]]     "
             "[[computer storage.md]]"
         )
+
+        # expected file contents for contains YAML
+        self.contains_yaml_body = (
+            "\nThe [[science]] of computers from how they work, how to use them, and the process of evaluating new better ways to devise solutions to problems with there assistance.\n"
+        )
+        self.contains_yaml_tags = "#computer-science #computer-science #discrete-mathematics\n"
+        self.contains_yaml_links = "[[science]]\n[[electronics]]\n"
+        self.contains_yaml_smart_links = (
+            "[[Computer science isn't about computers.md]]     "
+            "[[accessibility in computer science.md]]     "
+            "[[Dijkstra.md]]     "
+            "[[hardware.md]]     "
+            "[[computer storage.md]]"
+        )
+        self.contains_yaml_yaml = "---\nAlias:\n  - CS\n---\n"
+
+        # expected file contents for invalid ending
+        self.invalid_ending_body = (
+            "\nThe [[science]] of computers from how they work, how to use them, and the process of evaluating new better ways to devise solutions to problems."
+        )
+        self.invalid_ending_tags = "#computer-science #discrete-mathematics\n"
+        self.invalid_ending_links = "[[science]]\n[[electronics]]\n"
+        self.invalid_ending_smart_links = ""
+        self.invalid_ending_yaml = ""
+
+        # expected file contents for no headers
+        self.no_headers_body = (
+            "The [[science]] of computers from how they work, how to use them, and the process of evaluating new better ways to devise solutions to problems with there assistance.\n"
+        )
+        self.no_headers_tags = "#computer-science #discrete-mathematics\n"
+        self.no_headers_links = ""
+        self.no_headers_smart_links = (
+            "[[Computer science isn't about computers.md]]     "
+            "[[accessibility in computer science.md]]     "
+            "[[Dijkstra.md]]     "
+            "[[hardware.md]]     "
+            "[[computer storage.md]]"
+        )
+        self.no_headers_yaml = ""
+
+        # expected file contents for no tags with header
+        self.no_tags_with_header_body = (
+            "# BEEP BEEP BOOP BOOP\n\nThe [[science]] of computers from how they work, how to use them, and the process of evaluating new better ways to devise solutions to problems with there assistance.\n"
+        )
+        self.no_tags_with_header_tags = ""
+        self.no_tags_with_header_links = "[[science]]\n[[electronics]]\n"
+        self.no_tags_with_header_smart_links = (
+            "[[Computer science isn't about computers.md]]     "
+            "[[accessibility in computer science.md]]     "
+            "[[Dijkstra.md]]     "
+            "[[hardware.md]]     "
+            "[[computer storage.md]]"
+        )
+        self.no_tags_with_header_yaml = ""
+
+        # expected file contents for valid ending no lightning links
+        self.valid_ending_no_lightning_links_body = (
+            "\nThe [[science]] of computers from how they work, how to use them, and the process of evaluating new better ways to devise solutions to problems with there assistance.\n"
+        )
+        self.valid_ending_no_lightning_links_tags = "#computer-science\n"
+        self.valid_ending_no_lightning_links_links = "[[science]]\n[[electronics]]\n"
+        self.valid_ending_no_lightning_links_smart_links = ""
+        self.valid_ending_no_lightning_links_yaml = ""
+
+        # Create a dictionary mapping file names to their expected values
+        # This reduces redundancy by centralizing the expected values
+        self.expected_values = {
+            'example note.md': {
+                'links': self.example_links,
+                'tags': self.example_tags,
+                'body': self.example_body,
+                'smart_links': self.example_smart_links,
+                'yaml': ""
+            },
+            'contains YAML.md': {
+                'links': self.contains_yaml_links,
+                'tags': self.contains_yaml_tags,
+                'body': self.contains_yaml_body,
+                'smart_links': self.contains_yaml_smart_links,
+                'yaml': self.contains_yaml_yaml
+            },
+            'invalid ending.md': {
+                'links': self.invalid_ending_links,
+                'tags': self.invalid_ending_tags,
+                'body': self.invalid_ending_body,
+                'smart_links': self.invalid_ending_smart_links,
+                'yaml': self.invalid_ending_yaml
+            },
+            'no headers.md': {
+                'links': self.no_headers_links,
+                'tags': self.no_headers_tags,
+                'body': self.no_headers_body,
+                'smart_links': self.no_headers_smart_links,
+                'yaml': self.no_headers_yaml
+            },
+            'no tags with header.md': {
+                'links': self.no_tags_with_header_links,
+                'tags': self.no_tags_with_header_tags,
+                'body': self.no_tags_with_header_body,
+                'smart_links': self.no_tags_with_header_smart_links,
+                'yaml': self.no_tags_with_header_yaml
+            },
+            'valid ending no lightning links.md': {
+                'links': self.valid_ending_no_lightning_links_links,
+                'tags': self.valid_ending_no_lightning_links_tags,
+                'body': self.valid_ending_no_lightning_links_body,
+                'smart_links': self.valid_ending_no_lightning_links_smart_links,
+                'yaml': self.valid_ending_no_lightning_links_yaml
+            }
+        }
 
     def reset_files(self):
         # A method to reset the files to their original state using the stored data from setUp.
@@ -271,16 +381,106 @@ class TestFileParser(unittest.TestCase):
             self.current_file_lines['invalid ending.md'][-1]
         )
 
+    def _test_parse_note(self, file_name, expected_links=None, expected_tags=None, expected_body=None, expected_smart_links=None, expected_yaml=None):
+        """Helper method to test parse_note for a given file with expected values.
+
+        If individual expected values are not provided, it will use the values from self.expected_values.
+        """
+        contents = self.file_parser.parse_note(f'{self.test_vault}{file_name}')
+
+        # If individual expected values are provided, use them
+        # Otherwise, use the values from self.expected_values
+        if expected_links is None and file_name in self.expected_values:
+            expected = self.expected_values[file_name]
+            expected_links = expected['links']
+            expected_tags = expected['tags']
+            expected_body = expected['body']
+            expected_smart_links = expected['smart_links']
+            expected_yaml = expected['yaml']
+
+
+
+        self.assertEqual( expected_links, contents["links"])
+        self.assertEqual( expected_tags, contents["tags"])
+        self.assertEqual( expected_body, contents["body"])
+        self.assertEqual( expected_smart_links, contents["smart_links"])
+        self.assertEqual( expected_yaml, contents["YAML"])
+
     def test_valid_parse_note(self):
         # tests parse for the valid note
+        self._test_parse_note(
+            'example note.md',
+            self.example_links,
+            self.example_tags,
+            self.example_body,
+            self.example_smart_links
+        )
 
-        contents = self.file_parser.parse_note(f'{self.test_vault}example note.md')
+    def test_parse_note_contains_yaml(self):
+        # tests parse for the note with YAML frontmatter
+        self._test_parse_note(
+            'contains YAML.md',
+            self.contains_yaml_links,
+            self.contains_yaml_tags,
+            self.contains_yaml_body,
+            self.contains_yaml_smart_links,
+            self.contains_yaml_yaml
+        )
 
-        self.assertEqual(self.example_links, contents["links"])
-        self.assertEqual(self.example_tags, contents["tags"])
-        self.assertEqual(self.example_body, contents["body"])
-        self.assertEqual(self.example_smart_links, contents["smart_links"])
-        self.assertEqual("", contents["YAML"])
+    def test_parse_note_invalid_ending(self):
+        # tests parse for the note with invalid ending
+        self._test_parse_note(
+            'invalid ending.md',
+            self.invalid_ending_links,
+            self.invalid_ending_tags,
+            self.invalid_ending_body,
+            self.invalid_ending_smart_links,
+            self.invalid_ending_yaml
+        )
+
+    def test_parse_note_no_headers(self):
+        # tests parse for the note with no headers
+        self._test_parse_note(
+            'no headers.md',
+            self.no_headers_links,
+            self.no_headers_tags,
+            self.no_headers_body,
+            self.no_headers_smart_links,
+            self.no_headers_yaml
+        )
+
+    def test_parse_note_no_tags_with_header(self):
+        # tests parse for the note with no tags but with a header
+        self._test_parse_note(
+            'no tags with header.md',
+            self.no_tags_with_header_links,
+            self.no_tags_with_header_tags,
+            self.no_tags_with_header_body,
+            self.no_tags_with_header_smart_links,
+            self.no_tags_with_header_yaml
+        )
+
+    def test_parse_note_valid_ending_no_lightning_links(self):
+        # tests parse for the note with valid ending but no lightning links
+        self._test_parse_note(
+            'valid ending no lightning links.md',
+            self.valid_ending_no_lightning_links_links,
+            self.valid_ending_no_lightning_links_tags,
+            self.valid_ending_no_lightning_links_body,
+            self.valid_ending_no_lightning_links_smart_links,
+            self.valid_ending_no_lightning_links_yaml
+        )
+
+
+    def test_parse_all_notes(self):
+        """Test parse_note for all note files except 'multiple sections note.md' and 'single link.md'."""
+        # Exclude 'multiple sections note.md' and 'single link.md' as per requirements
+        excluded_files = ['multiple sections note.md', 'single link.md']
+
+        for file_name in self.expected_values.keys():
+            if file_name not in excluded_files:
+                with self.subTest(file_name=file_name):
+                    self._test_parse_note(file_name)
 
 
 if __name__ == '__main__':
