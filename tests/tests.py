@@ -434,15 +434,33 @@ class TestFileParser(unittest.TestCase):
         five_links = "[[science]]     [[electronics]]     [[money]]     [[mathematics]]     [[horses]]"
         six_links = "[[science]]     [[electronics]]     [[money]]     [[mathematics]]     [[horses]]     [[pumpkins]]"
 
-        # self.assertEqual(one_link, self.file_parser.format_inline_lighting_links(connections, 1))
+        self.assertEqual(one_link, self.file_parser.format_inline_lighting_links(connections, 1))
         self.assertEqual(two_links, self.file_parser.format_inline_lighting_links(connections, 2))
         self.assertEqual(three_links, self.file_parser.format_inline_lighting_links(connections, 3))
         self.assertEqual(four_links, self.file_parser.format_inline_lighting_links(connections, 4))
         self.assertEqual(five_links, self.file_parser.format_inline_lighting_links(connections, 5))
         self.assertEqual(six_links, self.file_parser.format_inline_lighting_links(connections, 6))
-    
 
-    # def test_write_to_file_valid(self):
+    def test_parse_inline_lightning_links(self):
+
+        expected = ["science.md", "electronics.md", "money.md", "mathematics.md", "big horses.md", "pumpkins.md"]
+
+        two_links = "[[science]]     [[electronics]]"
+        self.assertEqual(expected[:2], self.file_parser.parse_inline_lightning_links(two_links))
+
+        three_links = "[[science]]     [[electronics]]     [[money]]"
+        self.assertEqual(expected[:3], self.file_parser.parse_inline_lightning_links(three_links))
+
+        four_links = "[[science]]     [[electronics]]     [[money]]     [[mathematics]]"
+        self.assertEqual(expected[:4], self.file_parser.parse_inline_lightning_links(four_links))
+
+        five_links = "[[science]]     [[electronics]]     [[money]]     [[mathematics]]     [[big horses]]"
+        self.assertEqual(expected[:5], self.file_parser.parse_inline_lightning_links(five_links))
+
+        six_links = "[[science]]     [[electronics]]     [[money]]     [[mathematics]]     [[big horses]]     [[pumpkins]]"
+        self.assertEqual(expected, self.file_parser.parse_inline_lightning_links(six_links))
+
+        # def test_write_to_file_valid(self):
     #
     #     self.reset_file('example note.md')
     #     file_contents = self.file_parser.parse_note(f'{self.test_vault}example note.md')

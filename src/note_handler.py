@@ -1,5 +1,6 @@
 import os
 import json
+import re
 
 # final variables
 NOTE_EXTENSION = ".md"
@@ -246,11 +247,13 @@ class FileParser:
         # remove the new line character
         line = line.strip()
 
-        # remove end caps
-        line.strip("[]")
+        # uses regex to find all notes
+        pattern = r"\[\[([^\]]+)\]\]"
+        matches = re.findall(pattern, line)
 
-        # split based on standard gaps
-        links = line.split("{LINK_END}     {LINK_START}")
+        # Add .md extension to each match
+        links = [match + NOTE_EXTENSION for match in matches]
+
         return links
 
     @staticmethod
