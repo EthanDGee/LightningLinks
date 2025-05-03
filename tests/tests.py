@@ -263,7 +263,6 @@ class TestFileParser(unittest.TestCase):
         if file_name not in self.file_parser.file_names:
             os.remove(f'{self.test_vault}{file_name}')
 
-
     def compare_files(self, expected, actual):
         # compares a file to the expected original file.
         expected_lines = self.original_file_lines[expected]
@@ -422,7 +421,42 @@ class TestFileParser(unittest.TestCase):
             'valid ending no lightning links.md'
         )
 
+    def test_format_inline_lightning_links(self):
 
+        connections = {
+            "similar_notes": ["science.md", "electronics.md", "money.md", "mathematics.md", "horses.md", "pumpkins.md"],
+        }
+
+        one_link = "[[science]]"
+        two_links = "[[science]]     [[electronics]]"
+        three_links = "[[science]]     [[electronics]]     [[money]]"
+        four_links = "[[science]]     [[electronics]]     [[money]]     [[mathematics]]"
+        five_links = "[[science]]     [[electronics]]     [[money]]     [[mathematics]]     [[horses]]"
+        six_links = "[[science]]     [[electronics]]     [[money]]     [[mathematics]]     [[horses]]     [[pumpkins]]"
+
+        # self.assertEqual(one_link, self.file_parser.format_inline_lighting_links(connections, 1))
+        self.assertEqual(two_links, self.file_parser.format_inline_lighting_links(connections, 2))
+        self.assertEqual(three_links, self.file_parser.format_inline_lighting_links(connections, 3))
+        self.assertEqual(four_links, self.file_parser.format_inline_lighting_links(connections, 4))
+        self.assertEqual(five_links, self.file_parser.format_inline_lighting_links(connections, 5))
+        self.assertEqual(six_links, self.file_parser.format_inline_lighting_links(connections, 6))
+    
+
+    # def test_write_to_file_valid(self):
+    #
+    #     self.reset_file('example note.md')
+    #     file_contents = self.file_parser.parse_note(f'{self.test_vault}example note.md')
+    #     self.file_parser.write_to_file(file_contents)
+    #     self.compare_files('example note.md', f'{self.test_vault}example note.md')
+    #
+    # def test_write_to_file_no_YAML(self):
+    #     pass
+    #
+    # def test_write_to_file_no_links(self):
+    #     pass
+    #
+    # def test_write_to_file_no_tags(self):
+    #     pass
 
 
 if __name__ == '__main__':

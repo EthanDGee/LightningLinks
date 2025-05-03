@@ -177,8 +177,6 @@ class FileParser:
                     # move to the next line
                     current_line = file.readline()
 
-
-
             # Parse links (header section)
             # check for a links section and add to contents
             has_links = current_line.startswith(LINK_START) and current_line.endswith(LINK_END + "\n")
@@ -242,6 +240,20 @@ class FileParser:
         return all_files
 
     @staticmethod
+    def parse_inline_lightning_links(line):
+        # takes a formatted line of lightning links
+
+        # remove the new line character
+        line = line.strip()
+
+        # remove end caps
+        line.strip("[]")
+
+        # split based on standard gaps
+        links = line.split("{LINK_END}     {LINK_START}")
+        return links
+
+    @staticmethod
     def format_inline_lighting_links(file_content, num_lightning_links):
         # join a specified number of similar notes into a line
         # format middle
@@ -249,7 +261,7 @@ class FileParser:
         formatted_links = f"{LINK_START}{formatted_links}{LINK_END}"  # add bookends
 
         # remove the note extensions from links
-        formatted_links.replace(NOTE_EXTENSION, "")
+        formatted_links = formatted_links.replace(NOTE_EXTENSION, "")
 
         return formatted_links
 
@@ -262,6 +274,7 @@ class FileParser:
         :param file_content: A dictionary containing the content to be written to the file.
             It is expected to have the following keys:
                 - "file_name" (str): Name of the target file.
+                - "YAML" (str): YAML header to be written in the file.
                 - "links" (str): Links to be written in the file.
                 - "tags" (str): Tags to be written in the file.
                 - "body" (str): Body content to be written in the file.
@@ -274,6 +287,7 @@ class FileParser:
         :return: None
         """
         with open(f"{self.notes_directory}{file_content['file_name']}", 'w', encoding=ENCODING) as file:
+            file.write(file_content["YAML"])
             file.write(file_content["links"])
             file.write("\n")
             file.write(file_content["tags"])
