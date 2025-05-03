@@ -182,12 +182,19 @@ class TestFileParser(unittest.TestCase):
         self.example_links = "[[science]]\n[[electronics]]\n"
         self.example_header = "## BEEP BEEP BOOP BOOP\n"
         self.example_smart_links = (
-            "[[Computer science isn't about computers.md]]     "
-            "[[accessibility in computer science.md]]     "
-            "[[Dijkstra.md]]     "
-            "[[hardware.md]]     "
-            "[[computer storage.md]]"
+            "[[Computer science isn't about computers]]     "
+            "[[accessibility in computer science]]     "
+            "[[Dijkstra]]     "
+            "[[hardware]]     "
+            "[[computer storage]]"
         )
+        self.example_connections = [
+            "Computer science isn't about computers.md",
+            "accessibility in computer science.md",
+            "Dijkstra.md",
+            "hardware.md",
+            "computer storage.md",
+        ]
         self.empty_yaml = ""
 
         self.example_yaml = "---\nAlias:\n  - CS\n---\n"
@@ -460,22 +467,21 @@ class TestFileParser(unittest.TestCase):
         six_links = "[[science]]     [[electronics]]     [[money]]     [[mathematics]]     [[big horses]]     [[pumpkins]]"
         self.assertEqual(expected, self.file_parser.parse_inline_lightning_links(six_links))
 
-        # def test_write_to_file_valid(self):
-    #
-    #     self.reset_file('example note.md')
-    #     file_contents = self.file_parser.parse_note(f'{self.test_vault}example note.md')
-    #     self.file_parser.write_to_file(file_contents)
-    #     self.compare_files('example note.md', f'{self.test_vault}example note.md')
-    #
-    # def test_write_to_file_no_YAML(self):
-    #     pass
-    #
-    # def test_write_to_file_no_links(self):
-    #     pass
-    #
-    # def test_write_to_file_no_tags(self):
-    #     pass
+    def test_write_to_file_example_note(self):
 
+        file_contents = {
+            "file_name": 'temp example note.md',
+            "YAML": self.empty_yaml,
+            "links": self.example_links,
+            "tags": self.example_tags,
+            "body": self.example_body,
+            "similar_notes": self.example_connections
+        }
+
+        self.file_parser.write_to_file(file_contents, 5)
+
+        self.compare_files('example note.md', f'{self.test_vault}temp example note.md')
+        self.delete_file(f'{self.test_vault}temp example note.md')
 
 if __name__ == '__main__':
     unittest.main()

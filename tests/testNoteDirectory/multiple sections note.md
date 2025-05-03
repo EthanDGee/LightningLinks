@@ -7,4 +7,4 @@ The [[science]] of computers from how they work, how to use them, and the proces
 
 Computers are mainly known for their ability go "beep beep boop boop brrrrrrrrr boop boop beep"
 ### Lightning Links
-[[Computer science isn't about computers.md]]     [[accessibility in computer science.md]]     [[Dijkstra.md]]     [[hardware.md]]     [[computer storage.md]]
+[[Computer science isn't about computers]]     [[accessibility in computer science]]     [[Dijkstra]]     [[hardware]]     [[computer storage]]

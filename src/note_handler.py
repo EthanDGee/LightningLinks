@@ -242,7 +242,7 @@ class FileParser:
 
     @staticmethod
     def parse_inline_lightning_links(line):
-        # takes a formatted line of lightning links
+        # takes a formatted line of lightning links and returns the list of files
 
         # remove the new line character
         line = line.strip()
@@ -251,7 +251,7 @@ class FileParser:
         pattern = r"\[\[([^\]]+)\]\]"
         matches = re.findall(pattern, line)
 
-        # Add .md extension to each match
+        # Adds the note extension to each match
         links = [match + NOTE_EXTENSION for match in matches]
 
         return links
@@ -268,7 +268,7 @@ class FileParser:
 
         return formatted_links
 
-    def write_to_file(self, file_content, num_lightning_links):
+    def write_to_file(self, file_content : dict, num_lightning_links : int):
         """
         Writes content to a specified file in the given notes_directory, appending formatted
         links and tags, and incorporating a specified number of "lightning links"
