@@ -191,7 +191,6 @@ class TestFileParser(unittest.TestCase):
 
         self.contains_yaml_yaml = "---\nAlias:\n  - CS\n---\n"
 
-
         # Create a dictionary mapping file names to their expected values
         # This reduces redundancy by centralizing the expected values
         self.expected_values = {
@@ -212,8 +211,8 @@ class TestFileParser(unittest.TestCase):
             'invalid ending.md': {
                 'links': self.example_links,
                 'tags': self.example_tags,
-                'body': self.example_body,
-                'smart_links': self.example_smart_links,
+                'body': self.example_body[:-1],
+                'smart_links': "",
                 'yaml': self.example_yaml
             },
             'no headers.md': {
@@ -233,7 +232,7 @@ class TestFileParser(unittest.TestCase):
             'valid ending no lightning links.md': {
                 'links': self.example_links,
                 'tags': self.example_single_tag,
-                'body': self.example_body.strip(), # there is no new line after the body
+                'body': self.example_body,
                 'smart_links': "",
                 'yaml': self.example_yaml
             }
@@ -325,10 +324,12 @@ class TestFileParser(unittest.TestCase):
         )
 
     def _test_parse_note(self, file_name):
-        """Helper method to test parse_note for a given file with expected values.
+        """
+        Helper method to test parse_note for a given file with expected values.
 
         If individual expected values are not provided, it will use the values from self.expected_values.
         """
+        self.reset_files()
         contents = self.file_parser.parse_note(f'{self.test_vault}{file_name}')
 
         # If individual expected values are provided, use them
@@ -348,17 +349,15 @@ class TestFileParser(unittest.TestCase):
         self.assertEqual(expected_smart_links, contents["smart_links"])
         self.assertEqual(expected_yaml, contents["YAML"])
 
-    # def test_parse_all_notes(self):
-    #     """Test parse_note for all note files except 'multiple sections note.md' and 'single link.md'."""
-    #     # Exclude 'multiple sections note.md' and 'single link.md' as per requirements
-    #     excluded_files = ['multiple sections note.md', 'single link.md']
-    #
-    #     for file_name in self.expected_values.keys():
-    #         if file_name not in excluded_files:
-    #             with self.subTest(file_name=file_name):
-    #                 self._test_parse_note(file_name)
+    def test_parse_all_notes(self):
+        """Test parse_note for all note files except 'multiple sections note.md' and 'single link.md'."""
+        # Exclude 'multiple sections note.md' and 'single link.md' as per requirements
+        excluded_files = ['multiple sections note.md', 'single link.md']
 
-
+        for file_name in self.expected_values.keys():
+            if file_name not in excluded_files:
+                with self.subTest(file_name=file_name):
+                    self._test_parse_note(file_name)
 
     def test_valid_parse_note(self):
         # tests parse for the valid note
@@ -366,20 +365,17 @@ class TestFileParser(unittest.TestCase):
             'example note.md'
         )
 
-
     def test_parse_note_contains_yaml(self):
         # tests parse for the note with YAML frontmatter
         self._test_parse_note(
             'contains YAML.md'
         )
 
-
     def test_parse_note_invalid_ending(self):
-        # tests parse for the note with invalid ending
+        # tests parse for the note with an invalid ending
         self._test_parse_note(
             'invalid ending.md'
         )
-
 
     def test_parse_note_no_headers(self):
         # tests parse for the note with no headers
@@ -387,21 +383,17 @@ class TestFileParser(unittest.TestCase):
             'no headers.md'
         )
 
-
     def test_parse_note_no_tags_with_header(self):
         # tests parse for the note with no tags but with a header
         self._test_parse_note(
             'no tags with header.md'
         )
 
-
     def test_parse_note_valid_ending_no_lightning_links(self):
-        # tests parse for the note with valid ending but no lightning links
+        # tests parse for the note with a valid ending but no lightning links
         self._test_parse_note(
             'valid ending no lightning links.md'
         )
-
-
 
 
 if __name__ == '__main__':

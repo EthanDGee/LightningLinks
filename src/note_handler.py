@@ -11,6 +11,7 @@ LINK_END = "]]"
 YAML_INDICATOR = "---\n"
 TAG_INDICATOR = "#"
 
+
 class FileParser:
     def __init__(self, notes_directory):
         """
@@ -107,8 +108,6 @@ class FileParser:
             elif lines[1][-1] == "\n":
                 return False
 
-
-
             return True
 
         # loop through all note files
@@ -138,18 +137,18 @@ class FileParser:
                 - 'body': Main content of the file (excluding a smart links section).
                 - 'Smart_links': Smart Links section content (if any, otherwise empty string).
         """
+
         def is_tag(line):
-            # checks to see if a given line is a tag, this a more complex check so it is brokwn into it's function
+            # checks to see if a given line is a tag, this a more complex check, so it is broken into it's function
+            if line.startswith("#"):
 
-            if line.startswith(TAG_INDICATOR):
-
-                # check to see if it's a header which would have a space or multiple hastags
-                if line.startswith(TAG_INDICATOR + " "): # H1 Header
+                # check to see if it's a header (which would have a space between the word andor multiple hashtags)
+                if line.startswith(TAG_INDICATOR + " "):  # H1 Header
                     return False
                 elif line.startswith("##"):
                     return False
 
-                 # all tests have been passed.
+                # all tests have been passed.
                 return True
             else:
                 return False
@@ -162,19 +161,23 @@ class FileParser:
             current_line = file.readline()
             # check for YAML and parse YAML if found
 
-            if current_line.strip == YAML_INDICATOR:
-
+            has_yaml = current_line.strip() == YAML_INDICATOR
+            if has_yaml:
                 while current_line:
                     # YAML is ended by a second yaml indicator
                     note_info["YAML"] += current_line
 
-                    if current_line.strip()  == YAML_INDICATOR:
+                    if current_line.strip() == YAML_INDICATOR:
                         break
+
                     current_line = file.readline()
                 print(repr(current_line))
 
             # Parse links (header section)
-            if current_line.startswith(LINK_START):
+            # check for a links section and add to contents
+            has_links = current_line.startswith(LINK_START) and current_line.endswith(LINK_END + "\n")
+
+            if has_links:
                 while current_line:
                     if current_line.startswith(LINK_START) and current_line.endswith(LINK_END + "\n"):
                         note_info["links"] += current_line
@@ -182,12 +185,14 @@ class FileParser:
                         break  # Exit loop when we encounter a non-link line
                     current_line = file.readline()
 
-            # skip the blank line
-            current_line = file.readline()
+            # if it has top links skip the blank line kept between the top links and the tags
+            if has_links:
+                current_line = file.readline()
+
             # Parse Tags
-            if current_line.startswith(TAG_INDICATOR):
+            if is_tag(current_line):
                 while current_line:
-                    if current_line.startswith("#") and not current_line.startswith("# "):
+                    if is_tag(current_line):
                         note_info["tags"] += current_line
                     else:
                         break
@@ -195,7 +200,8 @@ class FileParser:
 
             # Parse body (main content)
             while current_line:
-                if current_line.strip() == LIGHTNING_LINKS_HEADER:  # Stop when we reach the Smart Links section
+                # Stop if we reach the optional Smart Links section
+                if current_line.strip() == LIGHTNING_LINKS_HEADER:
                     current_line = file.readline()
                     break
                 note_info["body"] += current_line
