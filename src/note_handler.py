@@ -268,7 +268,7 @@ class FileParser:
 
         return formatted_links
 
-    def write_to_file(self, file_content : dict, num_lightning_links : int):
+    def write_to_file(self, file_content : dict, num_lightning_links : int ):
         """
         Writes content to a specified file in the given notes_directory, appending formatted
         links and tags, and incorporating a specified number of "lightning links"
@@ -289,6 +289,22 @@ class FileParser:
         :type num_lightning_links: Int
         :return: None
         """
+
+        # Set default values for missing keys in file_content
+        defaults = {
+            "file_name": "",
+            "YAML": "",
+            "links": "",
+            "tags": "",
+            "body": "",
+            "similar_notes": []
+        }
+
+        # Ensure all keys exist
+        for key, value in defaults.items():
+            if key not in file_content:
+                file_content[key] = value
+
         with open(f"{self.notes_directory}{file_content['file_name']}", 'w', encoding=ENCODING) as file:
             file.write(file_content["YAML"])
             file.write(file_content["links"])

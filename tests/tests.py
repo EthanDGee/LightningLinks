@@ -483,5 +483,21 @@ class TestFileParser(unittest.TestCase):
         self.compare_files('example note.md', f'{self.test_vault}temp example note.md')
         self.delete_file(f'{self.test_vault}temp example note.md')
 
+    def test_write_to_file_contains_yaml(self):
+
+        file_contents = {
+            "file_name": 'temp contains YAML.md',
+            "YAML": self.example_yaml,
+            "links": self.example_links,
+            "tags": self.example_tags,
+            "body": self.example_body,
+            "similar_notes": self.example_connections
+        }
+
+        self.file_parser.write_to_file(file_contents, 5)
+
+        self.compare_files('contains YAML.md', f'{self.test_vault}temp contains YAML.md')
+        self.delete_file(f'{self.test_vault}temp contains YAML.md')
+
 if __name__ == '__main__':
     unittest.main()
