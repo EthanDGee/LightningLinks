@@ -1,10 +1,8 @@
 import unittest
-
-import yaml
-
+import os
+import torch
 from src.lightning_links_creator import get_top_n_similarities_from_row, get_all_top_n_similarities
 from src.note_handler import FileParser
-import torch
 
 
 class TestGetTopNSimilaritiesFromRow(unittest.TestCase):
@@ -190,9 +188,9 @@ class TestFileParser(unittest.TestCase):
             "[[hardware.md]]     "
             "[[computer storage.md]]"
         )
-        self.example_yaml = ""
+        self.empty_yaml = ""
 
-        self.contains_yaml_yaml = "---\nAlias:\n  - CS\n---\n"
+        self.example_yaml = "---\nAlias:\n  - CS\n---\n"
 
         # Create a dictionary mapping file names to their expected values
         # This reduces redundancy by centralizing the expected values
@@ -209,45 +207,43 @@ class TestFileParser(unittest.TestCase):
                 'tags': self.example_tags,
                 'body': self.example_body,
                 'smart_links': self.example_smart_links,
-                'yaml': self.contains_yaml_yaml
+                'yaml': self.example_yaml
             },
             'invalid ending.md': {
                 'links': self.example_links,
                 'tags': self.example_tags,
                 'body': self.example_body[:-1],
                 'smart_links': "",
-                'yaml': self.example_yaml
+                'yaml': self.empty_yaml
             },
             'no headers.md': {
                 'links': "",
                 'tags': self.example_tags,
                 'body': self.example_body,
                 'smart_links': self.example_smart_links,
-                'yaml': self.example_yaml
+                'yaml': self.empty_yaml
             },
             'no tags with header.md': {
                 'links': self.example_links,
                 'tags': "",
                 'body': f"{self.example_header}{self.example_body}",
                 'smart_links': self.example_smart_links,
-                'yaml': self.example_yaml
+                'yaml': self.empty_yaml
             },
             'valid ending no lightning links.md': {
                 'links': self.example_links,
                 'tags': self.example_single_tag,
                 'body': self.example_body,
                 'smart_links': "",
-                'yaml': self.example_yaml
+                'yaml': self.empty_yaml
             }
         }
-
 
     def reset_file(self, file_name):
         # a simple method that reset a single fle specified by file_name using original file_lines
 
         with open(f'{self.test_vault}{file_name}', 'w') as file:
             file.writelines(self.original_file_lines[file_name])
-
 
     def reset_files(self):
         # A method to reset the files to their original state using the stored data from setUp.
@@ -262,6 +258,26 @@ class TestFileParser(unittest.TestCase):
             with open(f'{self.test_vault}{file_name}', 'r') as file:
                 self.current_file_lines[file_name] = file.readlines()
 
+    def delete_file(self, file_name):
+        # deletes a file.
+        if file_name not in self.file_parser.file_names:
+            os.remove(f'{self.test_vault}{file_name}')
+
+
+    def compare_files(self, expected, actual):
+        # compares a file to the expected original file.
+        expected_lines = self.original_file_lines[expected]
+
+        with open(actual, 'r') as file:
+            current_line = file.readline()
+            line_index = 0
+            while current_line:
+                # check match
+                self.assertEqual(expected_lines[line_index], current_line)
+
+                # move to the next line
+                current_line = file.readline()
+                line_index += 1
 
     def test_get_note_names(self):
         # file names are calculated during the __init__ process, so we are just checking validity
@@ -405,6 +421,8 @@ class TestFileParser(unittest.TestCase):
         self._test_parse_note(
             'valid ending no lightning links.md'
         )
+
+
 
 
 if __name__ == '__main__':
