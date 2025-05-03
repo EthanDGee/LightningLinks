@@ -1,4 +1,7 @@
 import unittest
+
+import yaml
+
 from src.lightning_links_creator import get_top_n_similarities_from_row, get_all_top_n_similarities
 from src.note_handler import FileParser
 import torch
@@ -179,7 +182,7 @@ class TestFileParser(unittest.TestCase):
         self.example_tags = "#computer-science #discrete-mathematics\n"
         self.example_single_tag = "#computer-science\n"
         self.example_links = "[[science]]\n[[electronics]]\n"
-        self.example_header = "\n## BEEP BEEP BOOP BOOP\n\n"
+        self.example_header = "## BEEP BEEP BOOP BOOP\n"
         self.example_smart_links = (
             "[[Computer science isn't about computers.md]]     "
             "[[accessibility in computer science.md]]     "
@@ -238,12 +241,19 @@ class TestFileParser(unittest.TestCase):
             }
         }
 
+
+    def reset_file(self, file_name):
+        # a simple method that reset a single fle specified by file_name using original file_lines
+
+        with open(f'{self.test_vault}{file_name}', 'w') as file:
+            file.writelines(self.original_file_lines[file_name])
+
+
     def reset_files(self):
         # A method to reset the files to their original state using the stored data from setUp.
 
         for file_name in self.original_file_lines.keys():
-            with open(f'{self.test_vault}{file_name}', 'w') as file:
-                file.writelines(self.original_file_lines[file_name])
+            self.reset_file(file_name)
 
     def reload_files(self):
         # a method to reload the files from the current notes directory to test modifications made to the files.
@@ -251,6 +261,7 @@ class TestFileParser(unittest.TestCase):
         for file_name in self.current_file_lines.keys():
             with open(f'{self.test_vault}{file_name}', 'r') as file:
                 self.current_file_lines[file_name] = file.readlines()
+
 
     def test_get_note_names(self):
         # file names are calculated during the __init__ process, so we are just checking validity
@@ -329,7 +340,7 @@ class TestFileParser(unittest.TestCase):
 
         If individual expected values are not provided, it will use the values from self.expected_values.
         """
-        self.reset_files()
+        self.reset_file(file_name)
         contents = self.file_parser.parse_note(f'{self.test_vault}{file_name}')
 
         # If individual expected values are provided, use them

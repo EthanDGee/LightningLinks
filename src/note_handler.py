@@ -161,17 +161,23 @@ class FileParser:
             current_line = file.readline()
             # check for YAML and parse YAML if found
 
-            has_yaml = current_line.strip() == YAML_INDICATOR
+            has_yaml = current_line.startswith(YAML_INDICATOR)
             if has_yaml:
+                note_info["YAML"] += current_line
+                current_line = file.readline()
                 while current_line:
-                    # YAML is ended by a second yaml indicator
+                    # add line
                     note_info["YAML"] += current_line
-
-                    if current_line.strip() == YAML_INDICATOR:
+                    # YAML is ended by a second yaml indicator
+                    if current_line.startswith(YAML_INDICATOR):
+                        # move to the next line now that yaml has been extracted
+                        current_line = file.readline()
                         break
 
+                    # move to the next line
                     current_line = file.readline()
-                print(repr(current_line))
+
+
 
             # Parse links (header section)
             # check for a links section and add to contents
