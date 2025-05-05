@@ -209,7 +209,7 @@ class SmartAssistant:
         The parameters are as follows:
         - file_name: short title summarizing the main idea of the note
         - links: a string of links to other notes or resources related to the note seperated by newlines
-        - tags: a string of keywords or tags associated with the note
+        - tags: a string of keywords or tags associated with the note that match preexisting tags in the notes
         - body: a note on the topic provided in the user prompt that matches the styling of the other bodies provided
         - similar_notes: array of titles (or identifiers) of related notes or similar entries if present
         """
