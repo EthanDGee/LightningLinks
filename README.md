@@ -146,6 +146,13 @@ Lorem exampleum noteum, craftedum to exemplify the greatness of your own brillia
       3. Leverages the latest OpenAI API with temperature control for consistent, high-quality output.
       4. Uses Pydantic models to ensure structured, validated responses that match your requirements.
       5. Formats the data, links it to your other notes, and adds it to your Zettelkasten.
+
+3. **Ask Yourself**: Query your notes with natural language questions to extract insights and information from your knowledge base.
+      1. Accepts any question about your notes in natural language
+      2. Identifies the most relevant notes to answer your question
+      3. Extracts content from similar notes to provide comprehensive context
+      4. Processes your question using the modern OpenAI API with temperature control for consistent responses
+      5. Returns a detailed answer based solely on the content of your notes, maintaining your personal writing style
 ---
 
 ## Usage
@@ -239,6 +246,9 @@ Example
     - **`c: Create`**
       This creates a new note based on a topic you specify. Simply follow the prompt to enter your desired topic, and
       the tool will intelligently generate a new note for you.
+    - **`a: Ask yourself`**
+      This allows you to ask questions about your notes and get detailed answers based on your knowledge base.
+      Simply enter your question when prompted, and the tool will analyze your notes to provide a comprehensive response.
     - **`q: Quit`**
       Use this to exit the tool
 
