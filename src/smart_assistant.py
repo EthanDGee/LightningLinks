@@ -24,6 +24,7 @@ class SmartAssistant:
         model (str): The OpenAI model version used for API interactions.
         client (OpenAI): The client instance for interacting with OpenAI's API.
     """
+
     def __init__(self, notes_directory):
         self.file_handler = FileParser(notes_directory)
         self.similar_notes = self.file_handler.load_similar_notes()
@@ -334,6 +335,37 @@ class SmartAssistant:
         print(response)
         return response
 
+    def summarize(self, prompt: str) -> str:
+        """
+        Summarizes a given topic prompt using relevant notes. The method identifies the most relevant note and combines it
+        with similar notes to create a synthesized response. The response is formulated to align with the style of the notes
+        provided and is aimed at explaining the topic for a wide, non-expert audience.
+
+        Args:
+            prompt (str): The topic or question provided by the user to generate a summary.
+
+        Returns:
+            str: A synthesized explanation generated based on the relevant notes and the user's input.
+        """
+        # get the most relevant note and sources
+        reccended_note = self.recommend_note(prompt)
+        sources = self.get_similar_notes_contents(reccended_note)
+
+        # formulate response and make open ai request
+        system_prompt = (
+            "You are a research assistant who's job is to summarize the user's input using the provided notes as the "
+            "basis for your response. The goal is to create a summary that can be interpreted by a random non-expert. "
+            "Explain all concepts covered in the simplest most easily understandable base roots. The goal is to synthesize the "
+            "topic into a explanation that can be understood by a wider non-expert audience. "
+        )
+
+        user_prompt = f"Topic Prompt: {prompt}\nSource Material:\n{sources}"
+
+        response = self.make_open_ai_request(system_prompt, user_prompt, 0.7)
+        print(response)
+
+        return response
+
     @staticmethod
     def clean_up_note_name(note_name: str) -> str:
         # returns a cleaned-up note name that matches the styling convention of obsidian
@@ -384,6 +416,7 @@ if __name__ == "__main__":
         print("s: Suggest")
         print("c: Create")
         print("a: Ask yourself a question about your notes")
+        print("p: Summarize")
         print("q: Quit")
         command = input("Enter your choice (s/c/a/q): ").lower()
         if command == 's':
@@ -392,5 +425,7 @@ if __name__ == "__main__":
             smart_assistant.create(input("Enter the topic you would like to create: "))
         if command == 'a':
             smart_assistant.ask_yourself(input("Enter your question: "))
+        if command == 'p':
+            smart_assistant.summarize(input("Enter the topic you would like a summary of: "))
         if command == 'q':
             break
