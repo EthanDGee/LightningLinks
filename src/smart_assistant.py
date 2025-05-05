@@ -63,6 +63,8 @@ class SmartAssistant:
                     {"role": "user", "content": user}
                 ]
             )
+
+            return completion.choices[0].message.content
         else:
             completion = self.client.beta.chat.completions.parse(
                 model=self.model,
@@ -74,7 +76,7 @@ class SmartAssistant:
                 response_format=structure,
             )
 
-        return completion.choices[0].message.parsed
+            return completion.choices[0].message.parsed
 
     def recommend_note(self, prompt):
         """
@@ -136,15 +138,14 @@ class SmartAssistant:
         print(f"Getting notes related to {note_name}")
 
         note_name = f"{self.file_handler.notes_directory}{note_name}"
-
         similar_notes = self.similar_notes[note_name]
         similar_notes.append(note_name)
 
         similar_notes_parsed = ""
 
-        for note_name in similar_notes:
-            current_similar = self.file_handler.parse_note(f"{note_name}")
-            similar_notes_parsed += "file_name: " + note_name + "\n"
+        for note in similar_notes:
+            current_similar = self.file_handler.parse_note(f"{note}")
+            similar_notes_parsed += "file_name: " + note + "\n"
             similar_notes_parsed += "links: " + current_similar['links'] + "\n"
             similar_notes_parsed += "tags: " + current_similar['tags'] + "\n"
             similar_notes_parsed += "body: " + current_similar['body'] + "\n"
@@ -298,20 +299,20 @@ class SmartAssistant:
                 and response generation processes.
         """
 
-        reccomended_note = self.recommend_note(prompt)
+        recommended_note = self.recommend_note(prompt)
         # add a file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
-        reccomended_note = reccomended_note + ".md"
+        recommended_note = recommended_note + ".md"
 
         # now we get the similar files and ask for a response based on their inputs
 
         system_prompt = (
             "You are a research assistant who's job is to provide a response based on the user's "
-            "input using there research notes as the basis for your response. While also making "
-            "sure to respond in accordance with the style of the notes you have been given. "
+            "input using their research notes as the basis for your response. While also making "
+            "sure to respond in accordance with the style of the notes you have been given."
         )
         # get the source material
 
-        extracted_references = self.get_similar_notes_contents(reccomended_note)
+        extracted_references = self.get_similar_notes_contents(recommended_note)
 
         user_prompt = prompt + "\n\n\nNotes:\n" + extracted_references
 
