@@ -29,9 +29,6 @@ class SmartAssistant:
         :rtype: str
         """
         similar_notes_parsed = ""
-        
-        
-        notes = 
 
         for note in notes:
             current_similar = self.file_handler.parse_note(f"{self.file_handler.notes_directory}{note}{NOTE_EXTENSION}")
@@ -110,7 +107,7 @@ class SmartAssistant:
 
         # get a suggested file that matches the user suggest topic
         file_name = self.recommend_note(prompt)
-        
+
         # add file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
         file_name = file_name + ".md"
 
@@ -177,7 +174,7 @@ class SmartAssistant:
             suggestion: str
             reasoning: str
 
-        current_note = note_handler.get_current_note(self.notes_directory)
+        current_note = self.file_handler.get_current_note(self.notes_directory)
 
         # load similar
 
@@ -188,8 +185,7 @@ class SmartAssistant:
         # parse similar
         similar_notes_parsed = self.format_similar_notes(similar_notes)
 
-        all_note_names = note_handler.get_all_note_names(self.notes_directory)
-        temperature = 0.5
+        all_note_names = self.file_handler.note_names
 
         system_prompt = """
             You will be provided with the parsed contents of a note, as well as some similar notes that reference the same topic, as well as a list of links to select for the linking process.
@@ -207,22 +203,8 @@ class SmartAssistant:
             """
 
         user_prompt = f"""\nSimilar Notes: \n{similar_notes_parsed} \n All Available Notes\n {all_note_names}"""
-        response_format = ExpectedResponse
 
-        # request
-        client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
-        model = "gpt-4o-mini"
-        completion = client.beta.chat.completions.parse(
-            model=model,
-            temperature=temperature,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            response_format=response_format,
-        )
-
-        response = completion.choices[0].message.parsed
+        response = self.make_open_ai_request(system_prompt, user_prompt, 0.5, ExpectedResponse)
 
         print(f"Looking at your notes it seems best to create a note about {response.suggestion}")
         print("Here's why I think you should: \n" + response.reasoning + "\n")
@@ -260,7 +242,7 @@ class SmartAssistant:
 
         # now we get the similar files and ask for a response based on their inputs
 
-        response_system_prompt = ("You are a research assistant who's job is to provide a response based on the user's "
+        system_prompt = ("You are a research assistant who's job is to provide a response based on the user's "
                                   "input using there research notes as the basis for your response. While also making "
                                   "sure to respond in accordance with the style of the notes you have been given. ")
         # get the source material
@@ -268,19 +250,10 @@ class SmartAssistant:
         references = [file_name]
         references.extend(self.similar_notes[file_name])
         extracted_references = self.get_core_similar_notes(references)
-        temperature = 0.4
 
-        response_user_prompt = prompt + "\n\n\nNotes:\n" + extracted_references
+        user_prompt = prompt + "\n\n\nNotes:\n" + extracted_references
 
-        response = self.client.chat.completions.create(
-            model=model,
-            temperature=temperature,
-            messages=[
-                {"role": "system", "content": response_system_prompt},
-                {"role": "user", "content": response_user_prompt}
-            ],
-            max_tokens=500
-        )
+        response = self.make_open_ai_request(system_prompt, user_prompt, 0.4, "text")
 
         print(response.choices[0].message.content)
 
