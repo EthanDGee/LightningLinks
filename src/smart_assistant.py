@@ -9,6 +9,21 @@ NOTE_EXTENSION = ".md"
 
 
 class SmartAssistant:
+    """
+    Represents an AI-based smart assistant designed to manage and analyze notes.
+
+    This class facilitates accessing, creating, and suggesting notes using OpenAI's API.
+    It provides functionalities such as retrieving similar note contents, recommending
+    relevant files, and creating new structured notes. The assistant is initialized with a
+    reference to a directory containing notes, and it employs external services to analyze
+    and generate note content.
+
+    Attributes:
+        file_handler (FileParser): Handles file parsing and operations for the notes directory.
+        similar_notes (list): Preloaded information about the similarities among notes.
+        model (str): The OpenAI model version used for API interactions.
+        client (OpenAI): The client instance for interacting with OpenAI's API.
+    """
     def __init__(self, notes_directory):
         self.file_handler = FileParser(notes_directory)
         self.similar_notes = self.file_handler.load_similar_notes()
@@ -111,7 +126,7 @@ class SmartAssistant:
 
         suggestion = self.make_open_ai_request(system_prompt, user_prompt, temperature, FileName)
 
-        return suggestion.file_name + ".md"
+        return suggestion.file_name + NOTE_EXTENSION
 
     def get_similar_notes_contents(self, note_name: str):
         """
