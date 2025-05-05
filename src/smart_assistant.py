@@ -12,7 +12,6 @@ class SmartAssistant:
         self.file_handler = FileParser(notes_directory)
         self.similar_notes = self.file_handler.load_similar_notes()
 
-
         self.model = "gpt-4o-mini"
         self.client = OpenAI(api_key=os.getenv("open_ai_key"))
 
@@ -51,7 +50,7 @@ class SmartAssistant:
 
         return similar_bodies
 
-    def make_open_ai_request(self, system_prompt, user_prompt, temp,  response_format):
+    def make_open_ai_request(self, system_prompt, user_prompt, temp, response_format):
         completion = self.client.beta.chat.completions.parse(
             model=self.model,
             temperature=temp,
@@ -63,7 +62,6 @@ class SmartAssistant:
         )
 
         return completion.choices[0].message.parsed
-
 
     def recommend_note(self, prompt):
 
@@ -82,7 +80,7 @@ class SmartAssistant:
         suggestion = self.make_open_ai_request(system_prompt, user_prompt, temperature, FileName)
 
         return suggestion.file_name
-    
+
     def create(self, prompt):
         """
         Creates a new note based on the given user prompt pulling from relevant
@@ -143,7 +141,7 @@ class SmartAssistant:
 
         # request
         request = self.make_open_ai_request(system_prompt, user_prompt, temperature, NewFile)
-        
+
         new_note = {
             "file_name": self.clean_up_note_name(request.file_name),
             "links": f'{request.links}\n',
@@ -154,7 +152,6 @@ class SmartAssistant:
 
         # save note using note_handler.write_note
         self.file_handler.write_to_file(new_note, 3)
-
 
         print(f"Successfully created note: {new_note['file_name']}")
 
@@ -174,7 +171,7 @@ class SmartAssistant:
             suggestion: str
             reasoning: str
 
-        current_note = self.file_handler.get_current_note(self.notes_directory)
+        current_note = self.file_handler.get_current_note()
 
         # load similar
 
@@ -242,9 +239,11 @@ class SmartAssistant:
 
         # now we get the similar files and ask for a response based on their inputs
 
-        system_prompt = ("You are a research assistant who's job is to provide a response based on the user's "
-                                  "input using there research notes as the basis for your response. While also making "
-                                  "sure to respond in accordance with the style of the notes you have been given. ")
+        system_prompt = (
+            "You are a research assistant who's job is to provide a response based on the user's "
+            "input using there research notes as the basis for your response. While also making "
+            "sure to respond in accordance with the style of the notes you have been given. "
+        )
         # get the source material
 
         references = [file_name]
@@ -255,7 +254,7 @@ class SmartAssistant:
 
         response = self.make_open_ai_request(system_prompt, user_prompt, 0.4, "text")
 
-        print(response.choices[0].message.content)
+        print(response)
 
     @staticmethod
     def clean_up_note_name(note_name):
