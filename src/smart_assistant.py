@@ -27,6 +27,29 @@ class SmartAssistant:
         return similar_bodies
 
     def make_open_ai_request(self, system_prompt, user_prompt, temp, response_format):
+        """
+        Makes a request to OpenAI's API for generating a completion based on the provided
+        prompts, model, temperature, and desired response format.
+
+        This method utilizes OpenAI's chat completion endpoint to process a conversation-style
+        request. It constructs the message payload with the system and user prompts, specifies
+        the temperature for randomness, and defines how the response should be formatted.
+
+        Args:
+            system_prompt: Text provided to set the system context or behavior for the
+                AI assistant. This is typically a guideline or instruction for how the
+                AI should respond.
+            user_prompt: Text representing the user's input or question that the AI
+                should respond to.
+            temp: A float value controlling the randomness of the output. Lower values
+                result in more deterministic outputs, while higher values increase
+                randomness.
+            response_format: Specifies how the response from the AI should be
+                structured or parsed.
+
+        Returns:
+            The parsed content of the AI's response message.
+        """
         completion = self.client.beta.chat.completions.parse(
             model=self.model,
             temperature=temp,
@@ -40,7 +63,18 @@ class SmartAssistant:
         return completion.choices[0].message.parsed
 
     def recommend_note(self, prompt):
+        """
+        Suggests the most relevant file for a given user prompt based on the provided files list.
+        Utilizes OpenAI to infer the best match by analyzing the given system prompt, user prompt,
+        and available file names. Returns the name of the most relevant file.
 
+        Args:
+            prompt: A string containing the user's input or query for which the most relevant file
+                needs to be identified.
+
+        Returns:
+            str: The name of the suggested file from the available list of file names.
+        """
         class FileName(pydantic.BaseModel):
             file_name: str
 
@@ -59,15 +93,21 @@ class SmartAssistant:
 
     def get_similar_notes_contents(self, note_name):
         """
-        Parses a list of similar note files within a provided directory and generates
-        a formatted string containing details such as the file name, links, tags, and
-        body content of each note. This function processes the notes by leveraging
-        a parsing utility from the `note_handler` module.
+        Retrieves and formats the contents of similar notes to the specified note.
 
-        :param notes: List of note file names to be parsed.
-        :type notes: list[str]
-        :return: A formatted string containing details of the parsed similar notes.
-        :rtype: str
+        This method first adds the file extension to the note name to ensure it can be properly
+        located, even if not included in the note listing. It then retrieves a list of similar
+        notes to the specified note, appending the specified note itself to the list. The contents
+        of each similar note are parsed and formatted, including file name, links, tags,
+        and body content.
+
+        Args:
+            note_name (str): The name of the note (without file extension) for which similar notes
+            need to be retrieved.
+
+        Returns:
+            str: A formatted string containing details of all similar notes, including their file
+            names, links, tags, and body content.
         """
 
         # add file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
@@ -92,16 +132,18 @@ class SmartAssistant:
 
     def create(self, prompt):
         """
-        Creates a new note based on the given user prompt pulling from relevant
-        existing notes in the specified directory. This function uses OpenAI's
-         model to generate a structured response that adheres to the `NewFile`
-         class format. The note is then saved to the  specified directory upon
-         successful creation.
+        Creates a new note based on the provided user prompt and related contextual data.
 
-        :param prompt: The main user input that specifies the content or context for
-            the note to be created.
-        :type prompt: str
-        :return: None
+        This method generates a structured note that adheres to a predefined format
+        using data provided by user input and supplementary resources, such as parsed
+        similar notes and available links. The note is structured according to the NewFile
+        class, including attributes like file name, links, tags, body, and related notes.
+        The method uses an external service (e.g., OpenAI API) to create the structured
+        content, then saves the result using the file handler.
+
+        Args:
+            prompt (str): The user-provided topic or description for which the new note
+                should be created.
         """
         print("Creating new note: \n")
 
@@ -154,14 +196,21 @@ class SmartAssistant:
 
     def suggest(self):
         """
-        Suggests a new note topic based on the provided directory containing existing notes and their
-        metadata. The suggestion is derived by analyzing similar notes, parsed content, and the overall
-        list of available notes to try and find gaps in the users obsidian zettlekasten system. Utilizes
-        open AIs structured output to generate a structured response that adheres to the `ExpectedResponse`
-        with data about the suggested topic and a reasoning for the suggestion.
+        Suggests a new note topic based on analysis of current and similar notes, and provides reasoning for the suggestion.
 
+        This method interacts with the user's notes to propose a new topic not yet covered.
+        The suggestion is derived by analyzing the contents of the current note, as well as
+        similar notes, and comparing them against all available note topics. The generated
+        suggestion is returned with reasoning. The method also prompts the user for confirmation
+        to create a new note based on the suggested topic.
 
-        :return: None
+        Attributes:
+            ExpectedResponse: A pydantic model representing the structure of the response
+                provided by the OpenAI request. It contains 'suggestion' for the proposed
+                topic and 'reasoning' for the rationale behind the suggestion.
+
+        Raises:
+            None
         """
 
         class ExpectedResponse(pydantic.BaseModel):
@@ -211,17 +260,20 @@ class SmartAssistant:
 
     def ask_yourself(self, prompt):
         """
-        Provides a response to a user's query based on there notes directory by analyzing the prompt getting the most
-        relevant file, and then using the similar files and the content of that file to generate a response.
+        Generates a response by leveraging research notes relevant to the input prompt, in accordance
+        with the context and style of the reference material. This function utilizes a specified
+        recommendation mechanism to identify the most relevant notes, extracts their contents, and
+        employs an external AI service to produce the final response.
 
+        The process involves:
+        1. Recommending the most relevant note based on the user's input prompt.
+        2. Extracting content from notes deemed similar to the recommended note.
+        3. Formulating a system and user prompt for the external AI service.
+        4. Requesting and printing a response formatted in alignment with the extracted research notes.
 
         Args:
-            prompt (str): The user's input or query based on which a file and response need to be suggested and
-                generated.
-
-        Raises:
-            Various exceptions from OpenAI API calls if inputs or API calls fail.
-
+            prompt (str): The user's input prompt, which serves to guide the note recommendation
+                and response generation processes.
         """
 
         reccomended_note = self.recommend_note(prompt)
@@ -247,7 +299,7 @@ class SmartAssistant:
 
     @staticmethod
     def clean_up_note_name(note_name):
-        # returns a cleaned up note name that matches the styling convention of obsidian
+        # returns a cleaned-up note name that matches the styling convention of obsidian
 
         # swap out space alternatives for spaces
         note_name = note_name.replace("_", " ")
