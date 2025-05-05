@@ -13,7 +13,7 @@ class SmartAssistant:
         self.file_handler = FileParser(notes_directory)
         self.similar_notes = self.file_handler.load_similar_notes()
 
-        self.model = "gpt-4o-mini"
+        self.model = "gpt-4o"
         self.client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
     def get_core_similar_notes(self, notes):
@@ -112,7 +112,7 @@ class SmartAssistant:
 
         suggestion = self.make_open_ai_request(system_prompt, user_prompt, temperature, FileName)
 
-        return suggestion.file_name
+        return suggestion.file_name + ".md"
 
     def get_similar_notes_contents(self, note_name):
         """
@@ -301,7 +301,6 @@ class SmartAssistant:
 
         recommended_note = self.recommend_note(prompt)
         # add a file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
-        recommended_note = recommended_note + ".md"
 
         # now we get the similar files and ask for a response based on their inputs
 
