@@ -110,9 +110,14 @@ class LightningLinksCreator:
 
     def update_notes_with_similarities(self, notes, top_n_similarities_indexes):
         """Update notes with top N similarities and save them."""
+        total_notes_updated = 0
         for i, similarity_indexes in enumerate(top_n_similarities_indexes):
             notes[i]["similar_notes"] = [notes[sim_idx]["file_name"] for sim_idx in similarity_indexes]
-            self.file_handler.write_to_file(notes[i], self.num_lightning_links)
+            if self.file_handler.update_lighting_links(notes[i]["file_name"], notes[i]["similar_notes"],
+                                                       self.num_lightning_links):
+                total_notes_updated+=1
+
+        return total_notes_updated
 
     def refresh_similarities(self):
         """Re-compute similarities and update notes."""
@@ -145,7 +150,8 @@ class LightningLinksCreator:
         print("Updating Lighting Links...", end="")
         # append to file ends
 
-        self.update_notes_with_similarities(notes, top_n_similarities_indexes)
+        notes_updated = self.update_notes_with_similarities(notes, top_n_similarities_indexes)
+        print(F"\nTotal Lighting Links Updated: {notes_updated}\n")
 
         print(f"\rLightning Links Updated! {time() - start_time}")
         print("Saving Similarities...", end="")

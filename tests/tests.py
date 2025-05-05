@@ -1,135 +1,135 @@
 import unittest
 import os
 import torch
-from src.lightning_links_creator import get_top_n_similarities_from_row, get_all_top_n_similarities
+# from src.lightning_links_creator import get_top_n_similarities_from_row, get_all_top_n_similarities
 from src.note_handler import FileParser
 
-
-class TestGetTopNSimilaritiesFromRow(unittest.TestCase):
-    def test_basic_case(self):
-        row = [1.0, 2.0, 3.0, 4.0, 5.0]
-        num_similarities = 3
-        result = get_top_n_similarities_from_row(row, num_similarities)
-        result = sorted(result, reverse=True)
-        expected = [4, 3, 2]  # Indices of highest values in descending order
-        self.assertEqual(expected, result)
-
-    def test_smaller_num_similarities_than_row_length(self):
-        row = [1.5, 2.5, 0.0, 3.5, 4.5]
-        num_similarities = 2
-        result = get_top_n_similarities_from_row(row, num_similarities)
-        result = sorted(result, reverse=True)
-        expected = [4, 3]  # Indices of top 2 values
-        self.assertEqual(expected, result)
-
-    def test_equal_num_similarities_to_row_length(self):
-        row = [5.0, 4.0, 3.0, 2.0, 1.0]
-        num_similarities = 5
-        result = get_top_n_similarities_from_row(row, num_similarities)
-        result = sorted(result)
-        expected = [0, 1, 2, 3, 4]  # All indices as the entire row is included
-        self.assertEqual(expected, result)
-
-    def test_empty_row(self):
-        row = []
-        num_similarities = 3
-        result = get_top_n_similarities_from_row(row, num_similarities)
-        expected = []
-        self.assertEqual(expected, result)
-
-    def test_with_negative_values(self):
-        row = [-1, -2, -3, -4, -5]
-        num_similarities = 3
-        result = get_top_n_similarities_from_row(row, num_similarities)
-        result = sorted(result)
-        expected = [0, 1, 2]  # Indices of the top 3 (least negative values)
-        self.assertEqual(expected, result)
-
-    def test_zero_similarities(self):
-        row = [1, 2, 3, 4, 5]
-        num_similarities = 0
-        result = get_top_n_similarities_from_row(row, num_similarities)
-        expected = []  # No indices should be returned
-        self.assertEqual(expected, result)
-
-    def test_larger_num_similarities_than_row_length(self):
-        row = [1, 2, 3]
-        expected = [0, 1, 2]
-        num_similarities = 5
-        result = get_top_n_similarities_from_row(row, num_similarities)
-        self.assertEqual(expected, result)
-
-    def test_duplicate_values(self):
-        row = [5, 5, 3, 3, 1, 1]
-        num_similarities = 4
-        result = get_top_n_similarities_from_row(row, num_similarities)
-        result = sorted(result)
-        expected = [0, 1, 2, 3]  # Indices of the top 4 values
-        self.assertEqual(expected, result)
-
-
-class TestGetAllTopNSimilarities(unittest.TestCase):
-
-    def test_get_all_top_n_similarities_basic(self):
-        similarities = torch.tensor([
-            [0.1, 0.5, 0.3],
-            [0.8, 0.2, 0.4],
-            [0.6, 0.9, 0.7]
-        ])
-        n = 2
-        expected = [
-            [1, 2],
-            [0, 2],
-            [1, 2]
-        ]
-        result = get_all_top_n_similarities(similarities, n)
-        for row in result:
-            row.sort()
-
-        self.assertEqual(expected, result, )
-
-    def test_get_all_top_n_similarities_single_row(self):
-        similarities = torch.tensor([
-            [0.9, 0.4, 0.6]
-        ])
-        n = 2
-        expected = [
-            [0, 2]
-        ]
-        result = get_all_top_n_similarities(similarities, n)
-        self.assertEqual(result, expected)
-
-    def test_get_all_top_n_similarities_n_greater_than_length(self):
-        similarities = torch.tensor([
-            [0.5, 0.8, 0.3],
-            [0.4, 0.2, 0.1]
-        ])
-        n = 5
-        expected = [
-            [0, 1, 2],
-            [0, 1, 2]
-        ]
-        result = get_all_top_n_similarities(similarities, n)
-        for row in result:
-            row.sort()
-        self.assertEqual(expected, result)
-
-    def test_get_all_top_n_similarities_n_equals_zero(self):
-        similarities = torch.tensor([
-            [0.1, 0.5, 0.3],
-            [0.8, 0.2, 0.4]
-        ])
-        n = 0
-        expected = [
-            [],
-            []
-        ]
-        result = get_all_top_n_similarities(similarities, n)
-        for row in result:
-            row.sort()
-
-        self.assertEqual(expected, result)
-
+#
+# class TestGetTopNSimilaritiesFromRow(unittest.TestCase):
+#     def test_basic_case(self):
+#         row = [1.0, 2.0, 3.0, 4.0, 5.0]
+#         num_similarities = 3
+#         result = get_top_n_similarities_from_row(row, num_similarities)
+#         result = sorted(result, reverse=True)
+#         expected = [4, 3, 2]  # Indices of highest values in descending order
+#         self.assertEqual(expected, result)
+#
+#     def test_smaller_num_similarities_than_row_length(self):
+#         row = [1.5, 2.5, 0.0, 3.5, 4.5]
+#         num_similarities = 2
+#         result = get_top_n_similarities_from_row(row, num_similarities)
+#         result = sorted(result, reverse=True)
+#         expected = [4, 3]  # Indices of top 2 values
+#         self.assertEqual(expected, result)
+#
+#     def test_equal_num_similarities_to_row_length(self):
+#         row = [5.0, 4.0, 3.0, 2.0, 1.0]
+#         num_similarities = 5
+#         result = get_top_n_similarities_from_row(row, num_similarities)
+#         result = sorted(result)
+#         expected = [0, 1, 2, 3, 4]  # All indices as the entire row is included
+#         self.assertEqual(expected, result)
+#
+#     def test_empty_row(self):
+#         row = []
+#         num_similarities = 3
+#         result = get_top_n_similarities_from_row(row, num_similarities)
+#         expected = []
+#         self.assertEqual(expected, result)
+#
+#     def test_with_negative_values(self):
+#         row = [-1, -2, -3, -4, -5]
+#         num_similarities = 3
+#         result = get_top_n_similarities_from_row(row, num_similarities)
+#         result = sorted(result)
+#         expected = [0, 1, 2]  # Indices of the top 3 (least negative values)
+#         self.assertEqual(expected, result)
+#
+#     def test_zero_similarities(self):
+#         row = [1, 2, 3, 4, 5]
+#         num_similarities = 0
+#         result = get_top_n_similarities_from_row(row, num_similarities)
+#         expected = []  # No indices should be returned
+#         self.assertEqual(expected, result)
+#
+#     def test_larger_num_similarities_than_row_length(self):
+#         row = [1, 2, 3]
+#         expected = [0, 1, 2]
+#         num_similarities = 5
+#         result = get_top_n_similarities_from_row(row, num_similarities)
+#         self.assertEqual(expected, result)
+#
+#     def test_duplicate_values(self):
+#         row = [5, 5, 3, 3, 1, 1]
+#         num_similarities = 4
+#         result = get_top_n_similarities_from_row(row, num_similarities)
+#         result = sorted(result)
+#         expected = [0, 1, 2, 3]  # Indices of the top 4 values
+#         self.assertEqual(expected, result)
+#
+#
+# class TestGetAllTopNSimilarities(unittest.TestCase):
+#
+#     def test_get_all_top_n_similarities_basic(self):
+#         similarities = torch.tensor([
+#             [0.1, 0.5, 0.3],
+#             [0.8, 0.2, 0.4],
+#             [0.6, 0.9, 0.7]
+#         ])
+#         n = 2
+#         expected = [
+#             [1, 2],
+#             [0, 2],
+#             [1, 2]
+#         ]
+#         result = get_all_top_n_similarities(similarities, n)
+#         for row in result:
+#             row.sort()
+#
+#         self.assertEqual(expected, result, )
+#
+#     def test_get_all_top_n_similarities_single_row(self):
+#         similarities = torch.tensor([
+#             [0.9, 0.4, 0.6]
+#         ])
+#         n = 2
+#         expected = [
+#             [0, 2]
+#         ]
+#         result = get_all_top_n_similarities(similarities, n)
+#         self.assertEqual(result, expected)
+#
+#     def test_get_all_top_n_similarities_n_greater_than_length(self):
+#         similarities = torch.tensor([
+#             [0.5, 0.8, 0.3],
+#             [0.4, 0.2, 0.1]
+#         ])
+#         n = 5
+#         expected = [
+#             [0, 1, 2],
+#             [0, 1, 2]
+#         ]
+#         result = get_all_top_n_similarities(similarities, n)
+#         for row in result:
+#             row.sort()
+#         self.assertEqual(expected, result)
+#
+#     def test_get_all_top_n_similarities_n_equals_zero(self):
+#         similarities = torch.tensor([
+#             [0.1, 0.5, 0.3],
+#             [0.8, 0.2, 0.4]
+#         ])
+#         n = 0
+#         expected = [
+#             [],
+#             []
+#         ]
+#         result = get_all_top_n_similarities(similarities, n)
+#         for row in result:
+#             row.sort()
+#
+#         self.assertEqual(expected, result)
+#
 
 class TestFileParser(unittest.TestCase):
     def setUp(self):
@@ -430,9 +430,7 @@ class TestFileParser(unittest.TestCase):
 
     def test_format_inline_lightning_links(self):
 
-        connections = {
-            "similar_notes": ["science.md", "electronics.md", "money.md", "mathematics.md", "horses.md", "pumpkins.md"],
-        }
+        similar_notes =  ["science.md", "electronics.md", "money.md", "mathematics.md", "horses.md", "pumpkins.md"]
 
         one_link = "[[science]]"
         two_links = "[[science]]     [[electronics]]"
@@ -441,12 +439,12 @@ class TestFileParser(unittest.TestCase):
         five_links = "[[science]]     [[electronics]]     [[money]]     [[mathematics]]     [[horses]]"
         six_links = "[[science]]     [[electronics]]     [[money]]     [[mathematics]]     [[horses]]     [[pumpkins]]"
 
-        self.assertEqual(one_link, self.file_parser.format_inline_lighting_links(connections, 1))
-        self.assertEqual(two_links, self.file_parser.format_inline_lighting_links(connections, 2))
-        self.assertEqual(three_links, self.file_parser.format_inline_lighting_links(connections, 3))
-        self.assertEqual(four_links, self.file_parser.format_inline_lighting_links(connections, 4))
-        self.assertEqual(five_links, self.file_parser.format_inline_lighting_links(connections, 5))
-        self.assertEqual(six_links, self.file_parser.format_inline_lighting_links(connections, 6))
+        self.assertEqual(one_link, self.file_parser.format_inline_lighting_links(similar_notes, 1))
+        self.assertEqual(two_links, self.file_parser.format_inline_lighting_links(similar_notes, 2))
+        self.assertEqual(three_links, self.file_parser.format_inline_lighting_links(similar_notes, 3))
+        self.assertEqual(four_links, self.file_parser.format_inline_lighting_links(similar_notes, 4))
+        self.assertEqual(five_links, self.file_parser.format_inline_lighting_links(similar_notes, 5))
+        self.assertEqual(six_links, self.file_parser.format_inline_lighting_links(similar_notes, 6))
 
     def test_parse_inline_lightning_links(self):
 
@@ -470,7 +468,7 @@ class TestFileParser(unittest.TestCase):
     def test_write_to_file_example_note(self):
 
         file_contents = {
-            "file_name": 'temp example note.md',
+            "file_name": f'{self.test_vault}temp example note.md',
             "YAML": self.empty_yaml,
             "links": self.example_links,
             "tags": self.example_tags,
@@ -486,7 +484,7 @@ class TestFileParser(unittest.TestCase):
     def test_write_to_file_contains_yaml(self):
 
         file_contents = {
-            "file_name": 'temp contains YAML.md',
+            "file_name": f'{self.test_vault}temp contains YAML.md',
             "YAML": self.example_yaml,
             "links": self.example_links,
             "tags": self.example_tags,

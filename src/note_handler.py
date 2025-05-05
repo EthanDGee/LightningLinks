@@ -256,19 +256,21 @@ class FileParser:
 
         return links
 
-    @staticmethod
-    def format_inline_lighting_links(file_content, num_lightning_links):
+    def format_inline_lighting_links(self, similar_notes, num_lightning_links):
         # join a specified number of similar notes into a line
         # format middle
-        formatted_links = f"{LINK_END}     {LINK_START}".join(file_content["similar_notes"][:num_lightning_links])
+        formatted_links = f"{LINK_END}     {LINK_START}".join(similar_notes[:num_lightning_links])
         formatted_links = f"{LINK_START}{formatted_links}{LINK_END}"  # add bookends
 
         # remove the note extensions from links
         formatted_links = formatted_links.replace(NOTE_EXTENSION, "")
 
+        # remove any vault paths just in case
+        formatted_links = formatted_links.replace(self.notes_directory, "")
+
         return formatted_links
 
-    def write_to_file(self, file_content : dict, num_lightning_links : int ):
+    def write_to_file(self, file_content: dict, num_lightning_links: int):
         """
         Writes content to a specified file in the given notes_directory, appending formatted
         links and tags, and incorporating a specified number of "lightning links"
@@ -276,7 +278,7 @@ class FileParser:
 
         :param file_content: A dictionary containing the content to be written to the file.
             It is expected to have the following keys:
-                - "file_name" (str): Name of the target file.
+                - "note_name" (str): Name of the target file.
                 - "YAML" (str): YAML header to be written in the file.
                 - "links" (str): Links to be written in the file.
                 - "tags" (str): Tags to be written in the file.
@@ -292,7 +294,7 @@ class FileParser:
 
         # Set default values for missing keys in file_content
         defaults = {
-            "file_name": "",
+            "note_name": "",
             "YAML": "",
             "links": "",
             "tags": "",
@@ -305,8 +307,9 @@ class FileParser:
             if key not in file_content:
                 file_content[key] = value
 
-        with open(f"{self.notes_directory}{file_content['file_name']}", 'w', encoding=ENCODING) as file:
-            file.write(file_content["YAML"])
+        with open(f"{file_content['file_name']}", 'w', encoding=ENCODING) as file:
+            if file_content["YAML"] != "":
+                file.write(file_content["YAML"])
             file.write(file_content["links"])
             file.write("\n")
             file.write(file_content["tags"])
@@ -320,7 +323,48 @@ class FileParser:
             file.write(LIGHTNING_LINKS_HEADER + "\n")
 
             # add all notes in one line
-            file.write(self.format_inline_lighting_links(file_content, num_lightning_links))
+            file.write(self.format_inline_lighting_links(file_content["similar_notes"], num_lightning_links))
+
+    def update_lighting_links(self, file_path, similar_notes, num_lightning_links):
+
+        # takes in a note path and lightning link and adds/updates lightning links if changes have been made.
+
+        formatted_links = self.format_inline_lighting_links(similar_notes, num_lightning_links)
+
+        with open(file_path, 'r+', encoding=ENCODING) as file:
+            # Read the entire content to work with in-memory
+            lines = file.readlines()
+            found_section = False
+
+            # Locate the Lightning Links header
+            for i, line in enumerate(lines):
+                if line.strip() == LIGHTNING_LINKS_HEADER:
+                    found_section = True
+                    if i + 1 < len(lines):  # Check for the next line
+                        existing_links = lines[i + 1].strip()
+                        if existing_links == formatted_links:
+                            return False  # No updates required
+                        else:
+                            # Replace the existing line and truncate properly
+                            lines[i + 1] = formatted_links + "\n"
+                    else:
+                        # If the Lightning Links header exists but no links line is found
+                        lines.append(formatted_links + "\n")
+                    break
+
+            if not found_section:
+                # Append Lightning Links section at the end of the file
+                if not lines[-1].endswith("\n"):
+                    lines[-1] += "\n"  # Ensure a new line before appending
+                lines.append(LIGHTNING_LINKS_HEADER + "\n")
+                lines.append(formatted_links + "\n")
+
+            # Rewind file pointer, overwrite the content, and truncate the file
+            file.seek(0)
+            file.writelines(lines)
+            file.truncate()  # Ensure the file is truncated to remove leftover content
+
+            return True  # Indicates content was updated
 
     def save_similar_notes(self, notes):
         """
