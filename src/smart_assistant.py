@@ -12,6 +12,8 @@ class SmartAssistant:
         self.file_handler = FileParser(notes_directory)
         self.similar_notes = self.file_handler.load_similar_notes()
 
+
+        self.model = "gpt-4o-mini"
         self.client = OpenAI(api_key=os.getenv("open_ai_key"))
 
     def format_similar_notes(self):
@@ -49,33 +51,37 @@ class SmartAssistant:
 
         return similar_bodies
 
+    def make_open_ai_request(self, system_prompt, user_prompt, temp,  response_format):
+        completion = self.client.beta.chat.completions.parse(
+            model=self.model,
+            temperature=temp,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            response_format=response_format,
+        )
+
+        return completion.choices[0].message.parsed
+
+
     def recommend_sources(self, prompt):
 
         class FileName(pydantic.BaseModel):
             file_name: str
 
-        file_suggest_system_prompt = (
+        system_prompt = (
             "You are a research assistant who's job is to suggest the most relevant file for a given prompt."
             " and return its name making sure to select one from list of files provided. ")
 
         all_note_names = self.file_handler.note_names
         # remove the links
-        file_suggest_user_prompt = prompt + "\n\n\nFiles:\n" + all_note_names
-        model = 'gpt-4o-mini'
+        user_prompt = prompt + "\n\n\nFiles:\n" + all_note_names
         temperature = 0.1
 
+        suggestion = self.make_open_ai_request(system_prompt, user_prompt, temperature, FileName)
 
-        completion = self.client.beta.chat.completions.parse(
-            model=model,
-            temperature=temperature,
-            messages=[
-                {"role": "system", "content": file_suggest_system_prompt},
-                {"role": "user", "content": file_suggest_user_prompt}
-            ],
-            response_format=FileName,
-        )
-
-        return completion.choices[0].message.parsed.file_name
+        return suggestion.file_name
 
     def create(self, prompt):
         """
