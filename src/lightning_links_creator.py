@@ -6,7 +6,28 @@ import os
 
 
 class LightningLinksCreator:
-    def __init__(self, vault_path, num_lightning_links: int = 3, num_similar_notes: int = 10):
+
+    def __init__(self, vault_path: str, num_lightning_links: int = 3, num_similar_notes: int = 10):
+        """
+            A class for generating, managing, and updating similarity-based lightning links
+            across a collection of notes.
+
+            This class uses sentence embeddings to calculate similarities between notes
+            and updates the notes with the most similar ones. It integrates file handling,
+            similarity computation, and updating processes for efficient management of
+            lightning links in a given vault.
+
+            Attributes:
+                model (SentenceTransformer): The pre-trained SentenceTransformer model used
+                    for encoding sentences and calculating similarities.
+                file_handler (FileParser): An instance of the `FileParser` class responsible
+                    for file reading, note management, and file updates.
+                num_lightning_links (int): The maximum number of lightning links to be
+                    added to each note.
+                num_similar_notes (int): The number of top similar notes to consider
+                    for updates.
+            """
+
         # load model Source: https://huggingface.co/sentence-transformers/all-mpnet-base-v2
         self.model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
         self.file_handler = FileParser(vault_path)
@@ -116,7 +137,7 @@ class LightningLinksCreator:
             notes[i]["similar_notes"] = [notes[sim_idx]["file_name"] for sim_idx in similarity_indexes]
             if self.file_handler.update_lighting_links(notes[i]["file_name"], notes[i]["similar_notes"],
                                                        self.num_lightning_links):
-                total_notes_updated+=1
+                total_notes_updated += 1
 
         return total_notes_updated
 
