@@ -355,8 +355,9 @@ class SmartAssistant:
         system_prompt = (
             "You are a research assistant who's job is to summarize the user's input using the provided notes as the "
             "basis for your response. The goal is to create a summary that can be interpreted by a random non-expert. "
-            "Explain all concepts covered in the simplest most easily understandable base roots. The goal is to synthesize the "
-            "topic into a explanation that can be understood by a wider non-expert audience. "
+            "Explain all concepts covered in the simplest most easily understandable base roots. The goal is to "
+            "synthesize the topic into a explanation that can be understood by a wider non-expert audience. For more "
+            "complex topics use as much words as seen as necessary to explain the topic. "
         )
 
         user_prompt = f"Topic Prompt: {prompt}\nSource Material:\n{sources}"
