@@ -45,7 +45,7 @@ To get started, ensure you have Python installed. Follow these steps:
 1. Clone the repository to your local machine:
 
 ```shell script
-git clone https://github.com/your-repo/lightning-links.git
+git clone https://github.com/EthanDGee/lightning-links.git
    cd lightning-links
 ```
 
@@ -67,7 +67,8 @@ pip install -r requirements.txt
       saved locally. This allows the application to leverage Hugging Face's models and APIs seamlessly.
 
 4. Add the OpenAI API key (optional):
-    - If you want to use OpenAI for note generation, and suggestion, obtain an API key from [OpenAI](https://platform.openai.com/).
+    - If you want to use OpenAI for note generation, and suggestion, obtain an API key
+      from [OpenAI](https://platform.openai.com/).
     - Once you have the key, create a `.env` file in the project directory and add the following line:
       ```
       OPENAI_API_KEY=your_openai_api_key
@@ -84,10 +85,12 @@ pip install -r requirements.txt
     - Looks through all your notes and only grabs the most important data.
 
 2. **Analyze Similarities**:
-    - Embeds your notes using state-of-the-art sentence transformers (specifically the 'all-mpnet-base-v2' model) to find out what you're really talking about.
+    - Embeds your notes using state-of-the-art sentence transformers (specifically the 'all-mpnet-base-v2' model) to
+      find out what you're really talking about.
     - Using algorithms based on Natural Language Processing (NLP), Lightning Links then determines the most relevant
-      notes for each file, and saves it to your `.obsidian` folder so the smart assistant doesn't need to reindex them. 
-    - By default, this is set to 10, but you can do more, for higher accuracy at the cost of higher api usage fees. To customize look at Advanced Use
+      notes for each file, and saves it to your `.obsidian` folder so the smart assistant doesn't need to reindex them.
+    - By default, this is set to 10, but you can do more, for higher accuracy at the cost of higher api usage fees. To
+      customize look at Advanced Use
 
 3. **Append Relevant Links**:
     - A "Lightning links section" section is then appended at the **bottom** of every note, making it easy to see which
@@ -102,57 +105,73 @@ Lightning Links leverages several modern technologies to provide its functionali
 ### Modern Libraries and Frameworks
 
 1. **OpenAI Integration**:
-   - Uses the latest OpenAI client library (v1.76+) for efficient and reliable API interactions
-   - Structured response handling with Pydantic models for type safety and validation
-   - Temperature-controlled completions for consistent output quality
+    - Uses the latest OpenAI client library (v1.76+) for efficient and reliable API interactions
+    - Structured response handling with Pydantic models for type safety and validation
+    - Temperature-controlled completions for consistent output quality
 
 2. **Advanced NLP Capabilities**:
-   - Sentence Transformers (v4.1+) with the 'all-mpnet-base-v2' model for high-quality text embeddings
-   - PyTorch with CUDA support for accelerated processing when available
-   - Efficient similarity calculations using optimized vector operations
+    - Sentence Transformers (v4.1+) with the 'all-mpnet-base-v2' model for high-quality text embeddings
+    - PyTorch with CUDA support for accelerated processing when available
+    - Efficient similarity calculations using optimized vector operations
 
 3. **Robust Data Handling**:
-   - Intelligent parsing of Markdown files with support for YAML frontmatter
-   - Efficient storage and retrieval of similarity data
-   - Structured API responses for consistent and reliable note generation
+    - Intelligent parsing of Markdown files with support for YAML frontmatter
+    - Efficient storage and retrieval of similarity data
+    - Structured API responses for consistent and reliable note generation
 
-These modern technologies enable Lightning Links to provide fast, accurate, and reliable functionality while maintaining a simple and intuitive user experience.
+These modern technologies enable Lightning Links to provide fast, accurate, and reliable functionality while maintaining
+a simple and intuitive user experience.
 
 ---
 
 #### This is an example note, I'm sure yours are far better.
 
-Lorem exampleum noteum, craftedum to exemplify the greatness of your own brilliantum ideas. Althoughum this ipsum serves its purposum here, your notes undoubtedlyus surpass this one in insightum, creativitatis, and relevanceum. Humanus ingenuity shall triumphet always.
+Lorem exampleum noteum, craftedum to exemplify the greatness of your own brilliantum ideas. Althoughum this ipsum serves
+its purposum here, your notes undoubtedlyus surpass this one in insightum, creativitatis, and relevanceum. Humanus
+ingenuity shall triumphet always.
 
 ### Lightning Links
+
 [[ZettleKasten Explained]]    [[Too many notes not enough time]]     [[Second Brain, Second Life]]
 
 ---
 
 ### Smart Assistant
 
-1. **Suggest Missing Links**:  The system identifies knowledge gaps and surfaces notes you may not have thought to connect with your current
-      work.
-   1. Looks at your current workspace and pulls relevant notes.
-   2. Those notes are then parsed, and their main ideas are extracted so that OpenAI can see what you've been writing about.
-   3. Takes a snapshot of your overall Zettelkasten notes.
-   4. Uses the modern OpenAI API with structured Pydantic models to analyze gaps in your system.
-   5. Suggests a relevant note, as well as the reasoning as to why it might be helpful to add to your Zettelkasten.
-   6. Asks you if you want the smart assistant to automagically add it to your notes for you.
+1. **Suggest Missing Links**:  The system identifies knowledge gaps and surfaces notes you may not have thought to
+   connect with your current
+   work.
+    1. Looks at your current workspace and pulls relevant notes.
+    2. Those notes are then parsed, and their main ideas are extracted so that OpenAI can see what you've been writing
+       about.
+    3. Takes a snapshot of your overall Zettelkasten notes.
+    4. Uses the modern OpenAI API with structured Pydantic models to analyze gaps in your system.
+    5. Suggests a relevant note, as well as the reasoning as to why it might be helpful to add to your Zettelkasten.
+    6. Asks you if you want the smart assistant to automagically add it to your notes for you.
 
-2. **Generate Notes**: Based on the content of existing notes, Lightning Links can automatically generate fully linked, expanded notes.
-      1. Asks you for what you want
-      2. Pulls the relevant data from what you're working on.
-      3. Leverages the latest OpenAI API with temperature control for consistent, high-quality output.
-      4. Uses Pydantic models to ensure structured, validated responses that match your requirements.
-      5. Formats the data, links it to your other notes, and adds it to your Zettelkasten.
+2. **Generate Notes**: Based on the content of existing notes, Lightning Links can automatically generate fully linked,
+   expanded notes.
+    1. Asks you for what you want
+    2. Pulls the relevant data from what you're working on.
+    3. Leverages the latest OpenAI API with temperature control for consistent, high-quality output.
+    4. Uses Pydantic models to ensure structured, validated responses that match your requirements.
+    5. Formats the data, links it to your other notes, and adds it to your Zettelkasten.
 
-3. **Ask Yourself**: Query your notes with natural language questions to extract insights and information from your knowledge base.
-      1. Accepts any question about your notes in natural language
-      2. Identifies the most relevant notes to answer your question
-      3. Extracts content from similar notes to provide comprehensive context
-      4. Processes your question using the modern OpenAI API with temperature control for consistent responses
-      5. Returns a detailed answer based solely on the content of your notes, maintaining your personal writing style
+3. **Ask Yourself**: Query your notes with natural language questions to extract insights and information from your
+   knowledge base.
+    1. Accepts any question about your notes in natural language
+    2. Identifies the most relevant notes to answer your question
+    3. Extracts content from similar notes to provide comprehensive context
+    4. Processes your question using the modern OpenAI API with temperature control for consistent responses
+    5. Returns a detailed answer based solely on the content of your notes, maintaining your personal writing style
+4. **Create Summary**: Query your notes with a selected topic to create a summary built to be intpreted by a general
+   audience.
+    1. Accepts any selected topic of your choice in natural language.
+    2. Identifies the most relevant notes that fit your selected topic.
+    3. Extracts the contents of the relevant notes
+    4. Processes the notes using OperAI to create a broadly interpretable summary of your given topic.
+    5. Returns a detailed summary of your given topic.
+
 ---
 
 ## Usage
@@ -242,18 +261,22 @@ Example
    Once the program starts, you can choose one of the following commands:
     - **`s: Suggest`**
       This analyzes your recent notes and suggests a new topic you might want to consider adding to your collection.
-    With the option to automatically add a note on the topic to your notes. 
+      With the option to automatically add a note on the topic to your notes.
     - **`c: Create`**
       This creates a new note based on a topic you specify. Simply follow the prompt to enter your desired topic, and
       the tool will intelligently generate a new note for you.
     - **`a: Ask yourself`**
       This allows you to ask questions about your notes and get detailed answers based on your knowledge base.
-      Simply enter your question when prompted, and the tool will analyze your notes to provide a comprehensive response.
+      Simply enter your question when prompted, and the tool will analyze your notes to provide a comprehensive
+      response.
+    - **`p: Summary`**
+      This allows for you to create a broadly interpretable of a given topic using your notes as the primary source.
+      Simply enter in you selected topic when prompted, and the smart assistatn will create a easily understood summary
+      of the given topic.
     - **`q: Quit`**
       Use this to exit the tool
 
 ---
-
 
 ## Contribution
 
@@ -269,11 +292,13 @@ branch, and open a pull request.
 - Add support for fine-tuning language models on your personal note style
 - Enhance the structured response system with more advanced Pydantic models
 - Optimize performance for larger note collections with improved caching
+
 ---
 
 ### HACKUSU
 
 This project was made over the course of 18 hours for the [HackUSU 25](https://huntsman.usu.edu/hackusu/)
+
 ## License
 
 This project is licensed under the MIT License. Please refer to the `LICENSE` file for more details.
