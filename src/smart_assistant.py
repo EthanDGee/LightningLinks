@@ -13,7 +13,7 @@ class SmartAssistant:
         self.similar_notes = self.file_handler.load_similar_notes()
 
         self.model = "gpt-4o-mini"
-        self.client = OpenAI(api_key=os.getenv("open_ai_key"))
+        self.client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
     def get_core_similar_notes(self, notes):
         # a much simpler version of parse_similar() that only gets the body and file name for each note.
@@ -82,7 +82,11 @@ class SmartAssistant:
             "You are a research assistant who's job is to suggest the most relevant file for a given prompt."
             " and return its name making sure to select one from list of files provided. ")
 
-        all_note_names = self.file_handler.note_names
+        all_note_names = ""
+
+        for note_name in self.file_handler.note_names:
+            all_note_names += note_name + "\n"
+
         # remove the links
         user_prompt = prompt + "\n\n\nFiles:\n" + all_note_names
         temperature = 0.1
@@ -110,18 +114,20 @@ class SmartAssistant:
             names, links, tags, and body content.
         """
 
-        # add file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
-        file_name = note_name + ".md"
+
+
 
         # load similar
-        similar_notes = self.similar_notes[file_name]
-        similar_notes.append(file_name)
+        print(self.similar_notes.keys())
+        note_name = f"{self.file_handler.notes_directory}{note_name}"
+
+        similar_notes = self.similar_notes[note_name]
+        similar_notes.append(note_name)
 
         similar_notes_parsed = ""
 
         for note_name in similar_notes:
-            current_similar = self.file_handler.parse_note(
-                f"{self.file_handler.notes_directory}{note_name}{NOTE_EXTENSION}")
+            current_similar = self.file_handler.parse_note(f"{note_name}")
             similar_notes_parsed += "file_name: " + note_name + "\n"
             similar_notes_parsed += "links: " + current_similar['links'] + "\n"
             similar_notes_parsed += "tags: " + current_similar['tags'] + "\n"

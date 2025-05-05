@@ -101,7 +101,7 @@ class FileParser:
             # helper function that checks the last two lines of a file for proper formatting and returns a boolean
             # indicating whether they need to be changed.
 
-            # has header in first line
+            # has header in the first line
             if lines[0].strip() == LIGHTNING_LINKS_HEADER:
                 return False
 
@@ -169,9 +169,9 @@ class FileParser:
                 while current_line:
                     # add line
                     note_info["YAML"] += current_line
-                    # YAML is ended by a second yaml indicator
+                    # YAML is ended by a second YAML indicator
                     if current_line.startswith(YAML_INDICATOR):
-                        # move to the next line now that yaml has been extracted
+                        # move to the next line now that YAML has been extracted
                         current_line = file.readline()
                         break
 
@@ -190,7 +190,7 @@ class FileParser:
                         break  # Exit loop when we encounter a non-link line
                     current_line = file.readline()
 
-            # if it has top links skip the blank line kept between the top links and the tags
+            # if it has top links, skip the blank line kept between the top links and the tags
             if has_links:
                 current_line = file.readline()
 
@@ -353,13 +353,13 @@ class FileParser:
                     break
 
             if not found_section:
-                # Append Lightning Links section at the end of the file
+                # Append a Lightning Links section at the end of the file
                 if not lines[-1].endswith("\n"):
                     lines[-1] += "\n"  # Ensure a new line before appending
                 lines.append(LIGHTNING_LINKS_HEADER + "\n")
                 lines.append(formatted_links + "\n")
 
-            # Rewind file pointer, overwrite the content, and truncate the file
+            # Rewind the file pointer, overwrite the content, and truncate the file
             file.seek(0)
             file.writelines(lines)
             file.truncate()  # Ensure the file is truncated to remove leftover content

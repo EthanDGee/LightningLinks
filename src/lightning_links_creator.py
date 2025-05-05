@@ -7,6 +7,7 @@ import os
 
 class LightningLinksCreator:
     def __init__(self, vault_path, num_lightning_links: int = 3, num_similar_notes: int = 10):
+        # load model Source: https://huggingface.co/sentence-transformers/all-mpnet-base-v2
         self.model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
         self.file_handler = FileParser(vault_path)
         self.num_lightning_links = num_lightning_links
@@ -38,7 +39,7 @@ class LightningLinksCreator:
 
         :param notes_list: List of dictionaries where each dictionary represents a note
             and contains a "body" key with its associated content.
-        :type notes_list: list[dict]
+        :type notes_list: list
         :return: List of "body" contents extracted from the input dictionaries.
         :rtype: list[str]
         """
@@ -133,11 +134,6 @@ class LightningLinksCreator:
         print("Extracting Sentences...", end="")
         bodies = self.extract_bodies(notes)
         print(f"\rSentences Extracted! {time() - start_time}")
-
-        # load model Source: https://huggingface.co/sentence-transformers/all-mpnet-base-v2
-        print("Loading Model...", )
-        model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
-        print(f"Model Loaded! {time() - start_time}")
 
         # encode sentences
         print("Encoding Sentences...", end="")
