@@ -27,7 +27,7 @@ class SmartAssistant:
 
         return similar_bodies
 
-    def make_open_ai_request(self, system : str, user : str, temp: float, structure: Type[pydantic.BaseModel] = None):
+    def make_open_ai_request(self, system: str, user: str, temp: float, structure: Type[pydantic.BaseModel] = None):
         """
         Makes a request to OpenAI's API for generating a completion based on the provided
         prompts, model, temperature, and desired response format.
@@ -51,7 +51,6 @@ class SmartAssistant:
         Returns:
             The parsed content of the AI's response message.
         """
-
 
         # check for a structured response
         if structure is None:
@@ -78,7 +77,7 @@ class SmartAssistant:
 
             return completion.choices[0].message.parsed
 
-    def recommend_note(self, prompt):
+    def recommend_note(self, prompt: str):
         """
         Suggests the most relevant file for a given user prompt based on the provided files list.
         Utilizes OpenAI to infer the best match by analyzing the given system prompt, user prompt,
@@ -114,7 +113,7 @@ class SmartAssistant:
 
         return suggestion.file_name + ".md"
 
-    def get_similar_notes_contents(self, note_name):
+    def get_similar_notes_contents(self, note_name: str):
         """
         Retrieves and formats the contents of similar notes to the specified note.
 
@@ -153,7 +152,7 @@ class SmartAssistant:
 
         return similar_notes_parsed
 
-    def create(self, prompt):
+    def create(self, prompt: str):
         """
         Creates a new note based on the provided user prompt and related contextual data.
 
@@ -205,7 +204,7 @@ class SmartAssistant:
         request = self.make_open_ai_request(system_prompt, user_prompt, 0.5, NewFile)
 
         new_note = {
-            "file_name": self.clean_up_note_name(request.file_name),
+            "file_name": f"{self.file_handler.notes_directory}{self.clean_up_note_name(request.file_name)}",
             "links": f'{request.links}\n',
             "tags": f'{request.tags}\n',
             "body": f'{request.body}\n',
@@ -213,7 +212,7 @@ class SmartAssistant:
         }
 
         # save note using note_handler.write_note
-        self.file_handler.write_to_file(new_note, 3)
+        self.file_handler.write_to_file(new_note, 5)
 
         print(f"Successfully created note: {new_note['file_name']}")
 
@@ -228,7 +227,7 @@ class SmartAssistant:
         to create a new note based on the suggested topic.
 
         Attributes:
-            ExpectedResponse: A pydantic model representing the structure of the response
+            Suggestion: A pydantic model representing the structure of the response
                 provided by the OpenAI request. It contains 'suggestion' for the proposed
                 topic and 'reasoning' for the rationale behind the suggestion.
 
@@ -236,7 +235,7 @@ class SmartAssistant:
             None
         """
 
-        class ExpectedResponse(pydantic.BaseModel):
+        class Suggestion(pydantic.BaseModel):
             suggestion: str
             reasoning: str
 
@@ -264,7 +263,7 @@ class SmartAssistant:
 
         user_prompt = f"""\nSimilar Notes: \n{similar_notes_parsed} \n All Available Notes\n {all_note_names}"""
 
-        response = self.make_open_ai_request(system_prompt, user_prompt, 0.5, ExpectedResponse)
+        response = self.make_open_ai_request(system_prompt, user_prompt, 0.5, Suggestion)
 
         print(f"Looking at your notes it seems best to create a note about {response.suggestion}")
         print("Here's why I think you should: \n" + response.reasoning + "\n")
@@ -281,7 +280,7 @@ class SmartAssistant:
             prompt = f"create a note about {response.suggestion}"
             self.create(prompt)
 
-    def ask_yourself(self, prompt):
+    def ask_yourself(self, prompt: str) -> str:
         """
         Generates a response by leveraging research notes relevant to the input prompt, in accordance
         with the context and style of the reference material. This function utilizes a specified
@@ -318,9 +317,10 @@ class SmartAssistant:
         response = self.make_open_ai_request(system_prompt, user_prompt, 0.4)
 
         print(response)
+        return response
 
     @staticmethod
-    def clean_up_note_name(note_name):
+    def clean_up_note_name(note_name: str) -> str:
         # returns a cleaned-up note name that matches the styling convention of obsidian
 
         # swap out space alternatives for spaces
@@ -379,6 +379,3 @@ if __name__ == "__main__":
             smart_assistant.ask_yourself(input("Enter your question: "))
         if command == 'q':
             break
-
-        if command not in ["s", "c", "q"]:
-            print("Invalid command. Please enter a valid command.")
