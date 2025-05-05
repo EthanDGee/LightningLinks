@@ -66,22 +66,6 @@ class LightningLinksCreator:
 
         if self.num_similar_notes == 0:
             return []
-        #
-        # # create initial top_n from 0 to n-1
-        # top_n_indexes = list(range(num_similarities))
-        # # we need both indexes, so we can find the smallest index in the row array, and the index of smallest index so we know which of the top_n to swap
-        #
-        # smallest_index, index_of_smallest_index = find_min_of_indexes(top_n_indexes, row)
-        # smallest_value = row[smallest_index]
-        #
-        # # now we iterate through the remaining entries and continually swap out the smallest entry when we find a bigger entry
-        # for index in range(num_similarities, len(row)):
-        #     if row[index] > smallest_value:
-        #         # swap out for the higher value
-        #         top_n_indexes[index_of_smallest_index] = index
-        #         # find new smallest
-        #         smallest_index, index_of_smallest_index = find_min_of_indexes(top_n_indexes, row)
-        #         smallest_value = row[smallest_index]
 
         top_n_indexes = np.argsort(row)[::-1][1:self.num_similar_notes + 1]
 
@@ -109,8 +93,24 @@ class LightningLinksCreator:
 
         return top_n_indexes_table
 
-    def update_notes_with_similarities(self, notes, top_n_similarities_indexes):
-        """Update notes with top N similarities and save them."""
+    def update_notes_with_similarities(self, notes, top_n_similarities_indexes: list[list]):
+        """
+        Updates notes with a list of the most similar notes based on their indexes and optionally
+        updates associated files with lighting links.
+
+        This function assigns similar notes' filenames to the "similar_notes" key in each note from
+        the input list of notes, using the provided list of similarity indexes. If the file handler
+        updates the note with lighting links, the counter for total notes updated is incremented.
+
+        Args:
+            notes (list): A list of dictionaries, where each dictionary represents a note. Each note
+                must include the key "file_name" to identify its associated filename.
+            top_n_similarities_indexes (list): A list of lists containing indexes of similar notes for
+                each note in the `notes` list.
+
+        Returns:
+            int: The total count of notes successfully updated with lighting links.
+        """
         total_notes_updated = 0
         for i, similarity_indexes in enumerate(top_n_similarities_indexes):
             notes[i]["similar_notes"] = [notes[sim_idx]["file_name"] for sim_idx in similarity_indexes]
@@ -121,7 +121,28 @@ class LightningLinksCreator:
         return total_notes_updated
 
     def refresh_similarities(self):
-        """Re-compute similarities and update notes."""
+        """
+        Refreshes similarities between notes by extracting sentences, encoding them,
+        finding top similar sentences for each note, and updating these similarities
+        back into the notes.
+
+        This method performs the following operations:
+        1. Ensures the file format has proper endings.
+        2. Loads all note files.
+        3. Extracts sentences from the note body content.
+        4. Encodes the sentences for similarity computation.
+        5. Finds top N similar sentences for each note.
+        6. Updates the notes with computed similarities.
+        7. Saves the updated notes back to their respective files.
+
+        The process involves multiple stages with time tracking for performance
+        monitoring, and it incorporates updates to the existing notes to reflect
+        the computed similarities.
+
+        Raises:
+            Exception: If an unexpected error occurs during file processing or
+            similarity computation.
+        """
         # Ensure correct formatting
         self.file_handler.ensure_proper_endings()
 
