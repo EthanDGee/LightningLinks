@@ -16,7 +16,7 @@ class SmartAssistant:
         self.model = "gpt-4o-mini"
         self.client = OpenAI(api_key=os.getenv("open_ai_key"))
 
-    def format_similar_notes(self):
+    def format_similar_notes(self, note):
         """
         Parses a list of similar note files within a provided directory and generates
         a formatted string containing details such as the file name, links, tags, and
@@ -29,9 +29,12 @@ class SmartAssistant:
         :rtype: str
         """
         similar_notes_parsed = ""
+        
+        
+        notes = 
 
-        for note in self.file_handler.file_names:
-            current_similar = self.file_handler.parse_note(note)
+        for note in notes:
+            current_similar = self.file_handler.parse_note(f"{self.file_handler.notes_directory}{note}{NOTE_EXTENSION}")
             similar_notes_parsed += "file_name: " + note + "\n"
             similar_notes_parsed += "links: " + current_similar['links'] + "\n"
             similar_notes_parsed += "tags: " + current_similar['tags'] + "\n"
@@ -65,7 +68,7 @@ class SmartAssistant:
         return completion.choices[0].message.parsed
 
 
-    def recommend_sources(self, prompt):
+    def recommend_note(self, prompt):
 
         class FileName(pydantic.BaseModel):
             file_name: str
@@ -82,7 +85,7 @@ class SmartAssistant:
         suggestion = self.make_open_ai_request(system_prompt, user_prompt, temperature, FileName)
 
         return suggestion.file_name
-
+    
     def create(self, prompt):
         """
         Creates a new note based on the given user prompt pulling from relevant
@@ -106,13 +109,12 @@ class SmartAssistant:
             similar_notes: list[str]
 
         # get a suggested file that matches the user suggest topic
-
-        file_name = self.recommend_sources(prompt)
+        file_name = self.recommend_note(prompt)
+        
         # add file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
         file_name = file_name + ".md"
 
         # load similar
-
         similar_notes = self.similar_notes[file_name]
 
         similar_notes.append(file_name)
@@ -125,8 +127,6 @@ class SmartAssistant:
         all_note_names = self.file_handler.note_names
 
         # ask open AI for structured output that matches newFile
-        model = "gpt-4o-mini"
-        response_format = NewFile
         temperature = 0.5
 
         # set up prompts
@@ -145,30 +145,20 @@ class SmartAssistant:
         user_prompt = f"""{prompt} \nSimilar Notes: \n{similar_notes_parsed} \n All Available Links\n {all_note_names}"""
 
         # request
-        client = OpenAI(api_key=os.getenv("open_ai_key"))
-        completion = client.beta.chat.completions.parse(
-            model=model,
-            temperature=temperature,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            response_format=response_format,
-        )
-
-        # set up return for note creation
-        parsed_return = completion.choices[0].message.parsed
-
+        request = self.make_open_ai_request(system_prompt, user_prompt, temperature, NewFile)
+        
         new_note = {
-            "file_name": self.clean_up_note_name(parsed_return.file_name),
-            "links": f'{parsed_return.links}\n',
-            "tags": f'{parsed_return.tags}\n',
-            "body": f'{parsed_return.body}\n',
-            "similar_notes": parsed_return.similar_notes
+            "file_name": self.clean_up_note_name(request.file_name),
+            "links": f'{request.links}\n',
+            "tags": f'{request.tags}\n',
+            "body": f'{request.body}\n',
+            "similar_notes": request.similar_notes
         }
 
         # save note using note_handler.write_note
-        note_handler.write_to_file(self.notes_directory, new_note, 3)
+        self.file_handler.write_to_file(new_note, 3)
+
+
         print(f"Successfully created note: {new_note['file_name']}")
 
     def suggest(self):
@@ -264,7 +254,7 @@ class SmartAssistant:
 
         """
 
-        file_name = self.recommend_sources(prompt)
+        file_name = self.recommend_note(prompt)
         # add a file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
         file_name = file_name + ".md"
 
