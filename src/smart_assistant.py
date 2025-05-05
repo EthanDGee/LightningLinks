@@ -1,5 +1,5 @@
 from openai import OpenAI
-import note_handler
+from note_handler import FileParser
 import pydantic
 import os
 import torch
@@ -9,10 +9,12 @@ NOTE_EXTENSION = ".md"
 
 class SmartAssistant:
     def __init__(self, notes_directory):
-        self.notes_directory = notes_directory
-        self.similar_notes = note_handler.load_similar_notes(notes_directory)
+        self.file_handler = FileParser(notes_directory)
+        self.similar_notes = self.file_handler.load_similar_notes()
 
-    def parse_similar(self, notes):
+        self.client = OpenAI(api_key=os.getenv("open_ai_key"))
+
+    def format_similar_notes(self):
         """
         Parses a list of similar note files within a provided directory and generates
         a formatted string containing details such as the file name, links, tags, and
@@ -26,9 +28,8 @@ class SmartAssistant:
         """
         similar_notes_parsed = ""
 
-        for note in notes:
-            # print(note)
-            current_similar = note_handler.parse_note(f"{self.notes_directory}{note}")
+        for note in self.file_handler.file_names:
+            current_similar = self.file_handler.parse_note(note)
             similar_notes_parsed += "file_name: " + note + "\n"
             similar_notes_parsed += "links: " + current_similar['links'] + "\n"
             similar_notes_parsed += "tags: " + current_similar['tags'] + "\n"
@@ -42,11 +43,39 @@ class SmartAssistant:
         similar_bodies = ""
 
         for note in notes:
-            current_similar = note_handler.parse_note(f"{self.notes_directory}{note}")
+            current_similar = self.file_handler.parse_note(f"{self.notes_directory}{note}")
             similar_bodies += f"{note}\n"
             similar_bodies += current_similar['body'] + "\n"
 
         return similar_bodies
+
+    def recommend_sources(self, prompt):
+
+        class FileName(pydantic.BaseModel):
+            file_name: str
+
+        file_suggest_system_prompt = (
+            "You are a research assistant who's job is to suggest the most relevant file for a given prompt."
+            " and return its name making sure to select one from list of files provided. ")
+
+        all_note_names = self.file_handler.note_names
+        # remove the links
+        file_suggest_user_prompt = prompt + "\n\n\nFiles:\n" + all_note_names
+        model = 'gpt-4o-mini'
+        temperature = 0.1
+
+
+        completion = self.client.beta.chat.completions.parse(
+            model=model,
+            temperature=temperature,
+            messages=[
+                {"role": "system", "content": file_suggest_system_prompt},
+                {"role": "user", "content": file_suggest_user_prompt}
+            ],
+            response_format=FileName,
+        )
+
+        return completion.choices[0].message.parsed.file_name
 
     def create(self, prompt):
         """
@@ -70,33 +99,9 @@ class SmartAssistant:
             body: str
             similar_notes: list[str]
 
-        class FileName(pydantic.BaseModel):
-            file_name: str
-
         # get a suggested file that matches the user suggest topic
 
-        file_suggest_system_prompt = (
-            "You are a research assistant who's job is to suggest the most relevant file for a given prompt."
-            " and return its name making sure to select one from list of files provided. ")
-        all_note_names = note_handler.get_all_note_names(self.notes_directory)
-        # remove the links
-        all_note_names = all_note_names.replace("[", "").replace("]", "")
-        file_suggest_user_prompt = prompt + "\n\n\nFiles:\n" + all_note_names
-        model = 'gpt-4o-mini'
-        temperature = 0.1
-
-        client = OpenAI(api_key=os.getenv("open_ai_key"))
-        completion = client.beta.chat.completions.parse(
-            model=model,
-            temperature=temperature,
-            messages=[
-                {"role": "system", "content": file_suggest_system_prompt},
-                {"role": "user", "content": file_suggest_user_prompt}
-            ],
-            response_format=FileName,
-        )
-
-        file_name = completion.choices[0].message.parsed.file_name
+        file_name = self.recommend_sources(prompt)
         # add file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
         file_name = file_name + ".md"
 
@@ -108,10 +113,10 @@ class SmartAssistant:
 
         # parse similar
 
-        similar_notes_parsed = self.parse_similar(similar_notes)
+        similar_notes_parsed = self.format_similar_notes(similar_notes)
 
         # get all note names
-        all_note_names = note_handler.get_all_note_names(self.notes_directory)
+        all_note_names = self.file_handler.note_names
 
         # ask open AI for structured output that matches newFile
         model = "gpt-4o-mini"
@@ -185,7 +190,7 @@ class SmartAssistant:
         similar_notes.append(current_note)
 
         # parse similar
-        similar_notes_parsed = self.parse_similar(similar_notes)
+        similar_notes_parsed = self.format_similar_notes(similar_notes)
 
         all_note_names = note_handler.get_all_note_names(self.notes_directory)
         temperature = 0.5
@@ -209,7 +214,7 @@ class SmartAssistant:
         response_format = ExpectedResponse
 
         # request
-        client = OpenAI(api_key=os.getenv("open_ai_key"))
+        client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
         model = "gpt-4o-mini"
         completion = client.beta.chat.completions.parse(
             model=model,
@@ -252,33 +257,9 @@ class SmartAssistant:
             Various exceptions from OpenAI API calls if inputs or API calls fail.
 
         """
-        class FileName(pydantic.BaseModel):
-            file_name: str
 
-        # get a suggested file that matches the user suggest topic
-        file_suggest_system_prompt = (
-            "You are a research assistant who's job is to suggest the most relevant file for a given prompt."
-            " and return its name making sure to select one from list of files provided. ")
-        all_note_names = note_handler.get_all_note_names(self.notes_directory)
-        # remove the links
-        all_note_names = all_note_names.replace("[", "").replace("]", "")
-        file_suggest_user_prompt = prompt + "\n\n\nFiles:\n" + all_note_names
-        model = 'gpt-4o-mini'
-        temperature = 0.1
-
-        client = OpenAI(api_key=os.getenv("open_ai_key"))
-        completion = client.beta.chat.completions.parse(
-            model=model,
-            temperature=temperature,
-            messages=[
-                {"role": "system", "content": file_suggest_system_prompt},
-                {"role": "user", "content": file_suggest_user_prompt}
-            ],
-            response_format=FileName,
-        )
-
-        file_name = completion.choices[0].message.parsed.file_name
-        # add file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
+        file_name = self.recommend_sources(prompt)
+        # add a file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
         file_name = file_name + ".md"
 
         # now we get the similar files and ask for a response based on their inputs
@@ -295,7 +276,7 @@ class SmartAssistant:
 
         response_user_prompt = prompt + "\n\n\nNotes:\n" + extracted_references
 
-        response = client.chat.completions.create(
+        response = self.client.chat.completions.create(
             model=model,
             temperature=temperature,
             messages=[
@@ -345,8 +326,9 @@ if __name__ == "__main__":
 
     print("Excellent! Now let's get started with introducing you to our tools:")
     print("Currently, we have three tools:")
-    print("1. Suggest: This looks at the notes you've been looking at recently and suggests a topic that you might want "
-          "to add to your notes.")
+    print(
+        "1. Suggest: This looks at the notes you've been looking at recently and suggests a topic that you might want "
+        "to add to your notes.")
     print("2. Create: This creates a new note based on the topic you suggest.")
     print("3. Ask yourself a question about your notes: This allows you to ask questions about your notes and get a "
           "response back.")
