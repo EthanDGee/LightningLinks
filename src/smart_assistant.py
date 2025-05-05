@@ -1,5 +1,6 @@
 from openai import OpenAI
 from note_handler import FileParser
+from typing import Type
 import pydantic
 import os
 import torch
@@ -26,7 +27,7 @@ class SmartAssistant:
 
         return similar_bodies
 
-    def make_open_ai_request(self, system_prompt, user_prompt, temp, response_format):
+    def make_open_ai_request(self, system : str, user : str, temp: float, structure: Type[pydantic.BaseModel] = None):
         """
         Makes a request to OpenAI's API for generating a completion based on the provided
         prompts, model, temperature, and desired response format.
@@ -36,29 +37,42 @@ class SmartAssistant:
         the temperature for randomness, and defines how the response should be formatted.
 
         Args:
-            system_prompt: Text provided to set the system context or behavior for the
+            system: Text provided to set the system context or behavior for the
                 AI assistant. This is typically a guideline or instruction for how the
                 AI should respond.
-            user_prompt: Text representing the user's input or question that the AI
+            user: Text representing the user's input or question that the AI
                 should respond to.
             temp: A float value controlling the randomness of the output. Lower values
                 result in more deterministic outputs, while higher values increase
                 randomness.
-            response_format: Specifies how the response from the AI should be
+            structure: Specifies how the response from the AI should be
                 structured or parsed.
 
         Returns:
             The parsed content of the AI's response message.
         """
-        completion = self.client.beta.chat.completions.parse(
-            model=self.model,
-            temperature=temp,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            response_format=response_format,
-        )
+
+
+        # check for a structured response
+        if structure is None:
+            completion = self.client.beta.chat.completions.parse(
+                model=self.model,
+                temperature=temp,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user}
+                ]
+            )
+        else:
+            completion = self.client.beta.chat.completions.parse(
+                model=self.model,
+                temperature=temp,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user}
+                ],
+                response_format=structure,
+            )
 
         return completion.choices[0].message.parsed
 
@@ -75,6 +89,7 @@ class SmartAssistant:
         Returns:
             str: The name of the suggested file from the available list of file names.
         """
+
         class FileName(pydantic.BaseModel):
             file_name: str
 
@@ -90,6 +105,8 @@ class SmartAssistant:
         # remove the links
         user_prompt = prompt + "\n\n\nFiles:\n" + all_note_names
         temperature = 0.1
+
+        print("Looking for relevant file...")
 
         suggestion = self.make_open_ai_request(system_prompt, user_prompt, temperature, FileName)
 
@@ -114,11 +131,10 @@ class SmartAssistant:
             names, links, tags, and body content.
         """
 
-
-
-
         # load similar
-        print(self.similar_notes.keys())
+
+        print(f"Getting notes related to {note_name}")
+
         note_name = f"{self.file_handler.notes_directory}{note_name}"
 
         similar_notes = self.similar_notes[note_name]
@@ -299,7 +315,7 @@ class SmartAssistant:
 
         user_prompt = prompt + "\n\n\nNotes:\n" + extracted_references
 
-        response = self.make_open_ai_request(system_prompt, user_prompt, 0.4, "text")
+        response = self.make_open_ai_request(system_prompt, user_prompt, 0.4)
 
         print(response)
 
