@@ -15,30 +15,6 @@ class SmartAssistant:
         self.model = "gpt-4o-mini"
         self.client = OpenAI(api_key=os.getenv("open_ai_key"))
 
-    def format_similar_notes(self, note):
-        """
-        Parses a list of similar note files within a provided directory and generates
-        a formatted string containing details such as the file name, links, tags, and
-        body content of each note. This function processes the notes by leveraging
-        a parsing utility from the `note_handler` module.
-
-        :param notes: List of note file names to be parsed.
-        :type notes: list[str]
-        :return: A formatted string containing details of the parsed similar notes.
-        :rtype: str
-        """
-        similar_notes_parsed = ""
-
-        for note in notes:
-            current_similar = self.file_handler.parse_note(f"{self.file_handler.notes_directory}{note}{NOTE_EXTENSION}")
-            similar_notes_parsed += "file_name: " + note + "\n"
-            similar_notes_parsed += "links: " + current_similar['links'] + "\n"
-            similar_notes_parsed += "tags: " + current_similar['tags'] + "\n"
-            similar_notes_parsed += "body: " + current_similar['body'] + "\n"
-            similar_notes_parsed += "\n"
-
-        return similar_notes_parsed
-
     def get_core_similar_notes(self, notes):
         # a much simpler version of parse_similar() that only gets the body and file name for each note.
         similar_bodies = ""
@@ -81,6 +57,39 @@ class SmartAssistant:
 
         return suggestion.file_name
 
+    def get_similar_notes_contents(self, note_name):
+        """
+        Parses a list of similar note files within a provided directory and generates
+        a formatted string containing details such as the file name, links, tags, and
+        body content of each note. This function processes the notes by leveraging
+        a parsing utility from the `note_handler` module.
+
+        :param notes: List of note file names to be parsed.
+        :type notes: list[str]
+        :return: A formatted string containing details of the parsed similar notes.
+        :rtype: str
+        """
+
+        # add file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
+        file_name = note_name + ".md"
+
+        # load similar
+        similar_notes = self.similar_notes[file_name]
+        similar_notes.append(file_name)
+
+        similar_notes_parsed = ""
+
+        for note_name in similar_notes:
+            current_similar = self.file_handler.parse_note(
+                f"{self.file_handler.notes_directory}{note_name}{NOTE_EXTENSION}")
+            similar_notes_parsed += "file_name: " + note_name + "\n"
+            similar_notes_parsed += "links: " + current_similar['links'] + "\n"
+            similar_notes_parsed += "tags: " + current_similar['tags'] + "\n"
+            similar_notes_parsed += "body: " + current_similar['body'] + "\n"
+            similar_notes_parsed += "\n"
+
+        return similar_notes_parsed
+
     def create(self, prompt):
         """
         Creates a new note based on the given user prompt pulling from relevant
@@ -105,24 +114,12 @@ class SmartAssistant:
 
         # get a suggested file that matches the user suggest topic
         file_name = self.recommend_note(prompt)
-
-        # add file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
-        file_name = file_name + ".md"
-
-        # load similar
-        similar_notes = self.similar_notes[file_name]
-
-        similar_notes.append(file_name)
-
-        # parse similar
-
-        similar_notes_parsed = self.format_similar_notes(similar_notes)
+        similar_notes_parsed = self.get_similar_notes_contents(file_name)
 
         # get all note names
         all_note_names = self.file_handler.note_names
 
         # ask open AI for structured output that matches newFile
-        temperature = 0.5
 
         # set up prompts
 
@@ -140,7 +137,7 @@ class SmartAssistant:
         user_prompt = f"""{prompt} \nSimilar Notes: \n{similar_notes_parsed} \n All Available Links\n {all_note_names}"""
 
         # request
-        request = self.make_open_ai_request(system_prompt, user_prompt, temperature, NewFile)
+        request = self.make_open_ai_request(system_prompt, user_prompt, 0.5, NewFile)
 
         new_note = {
             "file_name": self.clean_up_note_name(request.file_name),
@@ -175,13 +172,7 @@ class SmartAssistant:
 
         # load similar
 
-        similar_notes = self.similar_notes[current_note]
-
-        similar_notes.append(current_note)
-
-        # parse similar
-        similar_notes_parsed = self.format_similar_notes(similar_notes)
-
+        similar_notes_parsed = self.get_similar_notes_contents(current_note)
         all_note_names = self.file_handler.note_names
 
         system_prompt = """
@@ -233,9 +224,9 @@ class SmartAssistant:
 
         """
 
-        file_name = self.recommend_note(prompt)
+        reccomended_note = self.recommend_note(prompt)
         # add a file extension so it can't be looked up, its not in list_all_note_name to prevent embedding errors.
-        file_name = file_name + ".md"
+        reccomended_note = reccomended_note + ".md"
 
         # now we get the similar files and ask for a response based on their inputs
 
@@ -246,9 +237,7 @@ class SmartAssistant:
         )
         # get the source material
 
-        references = [file_name]
-        references.extend(self.similar_notes[file_name])
-        extracted_references = self.get_core_similar_notes(references)
+        extracted_references = self.get_similar_notes_contents(reccomended_note)
 
         user_prompt = prompt + "\n\n\nNotes:\n" + extracted_references
 
