@@ -84,7 +84,7 @@ pip install -r requirements.txt
     - Looks through all your notes and only grabs the most important data.
 
 2. **Analyze Similarities**:
-    - Embeds your notes using sentence transformers to find out what you're really talking about.
+    - Embeds your notes using state-of-the-art sentence transformers (specifically the 'all-mpnet-base-v2' model) to find out what you're really talking about.
     - Using algorithms based on Natural Language Processing (NLP), Lightning Links then determines the most relevant
       notes for each file, and saves it to your `.obsidian` folder so the smart assistant doesn't need to reindex them. 
     - By default, this is set to 10, but you can do more, for higher accuracy at the cost of higher api usage fees. To customize look at Advanced Use
@@ -94,7 +94,29 @@ pip install -r requirements.txt
       ideas connect.
     - It only appends the most 3 relevant links to the end of your notes.
     - Are three notes just not enough? Look at advanced use to customize it.
-    - 
+
+## Technical Details
+
+Lightning Links leverages several modern technologies to provide its functionality:
+
+### Modern Libraries and Frameworks
+
+1. **OpenAI Integration**:
+   - Uses the latest OpenAI client library (v1.76+) for efficient and reliable API interactions
+   - Structured response handling with Pydantic models for type safety and validation
+   - Temperature-controlled completions for consistent output quality
+
+2. **Advanced NLP Capabilities**:
+   - Sentence Transformers (v4.1+) with the 'all-mpnet-base-v2' model for high-quality text embeddings
+   - PyTorch with CUDA support for accelerated processing when available
+   - Efficient similarity calculations using optimized vector operations
+
+3. **Robust Data Handling**:
+   - Intelligent parsing of Markdown files with support for YAML frontmatter
+   - Efficient storage and retrieval of similarity data
+   - Structured API responses for consistent and reliable note generation
+
+These modern technologies enable Lightning Links to provide fast, accurate, and reliable functionality while maintaining a simple and intuitive user experience.
 
 ---
 
@@ -112,17 +134,18 @@ Lorem exampleum noteum, craftedum to exemplify the greatness of your own brillia
 1. **Suggest Missing Links**:  The system identifies knowledge gaps and surfaces notes you may not have thought to connect with your current
       work.
    1. Looks at your current workspace and pulls relevant notes.
-   2. Those notes are then parsed, and there main ideas are extracted so that open AI can see what you've been writing about.
-   3. Takes a snapshot of your overall zettlekasten notes.
-   4. Ships it off to open ai to look for gaps in your system.
-   5. Suggests a relevant note, as well as the reasoning as to why it might be helpful to add to your zettle kasten.
+   2. Those notes are then parsed, and their main ideas are extracted so that OpenAI can see what you've been writing about.
+   3. Takes a snapshot of your overall Zettelkasten notes.
+   4. Uses the modern OpenAI API with structured Pydantic models to analyze gaps in your system.
+   5. Suggests a relevant note, as well as the reasoning as to why it might be helpful to add to your Zettelkasten.
    6. Asks you if you want the smart assistant to automagically add it to your notes for you.
 
 2. **Generate Notes**: Based on the content of existing notes, Lightning Links can automatically generate fully linked, expanded notes.
       1. Asks you for what you want
       2. Pulls the relevant data from what you're working on.
-      3. Ships it off to open ai to generate the content based on your notes, styling, and more.
-      4. Formats the data, links it to your other notes, and adds it to your zettlekasten.
+      3. Leverages the latest OpenAI API with temperature control for consistent, high-quality output.
+      4. Uses Pydantic models to ensure structured, validated responses that match your requirements.
+      5. Formats the data, links it to your other notes, and adds it to your Zettelkasten.
 ---
 
 ## Usage
@@ -229,10 +252,13 @@ branch, and open a pull request.
 
 ### Roadmap:
 
-- Port the Project to an Obsidian Plugin for ease of use. 
-- Expand notes compatibility (e.g., plain text files or other formats beyond Markdown).
-- Allowing for people that use the folder system within obsidian for advanced organization
-- 
+- Port the Project to an Obsidian Plugin for ease of use
+- Expand notes compatibility (e.g., plain text files or other formats beyond Markdown)
+- Add support for folder-based organization within Obsidian for advanced organization
+- Implement more advanced embedding models for even better similarity detection
+- Add support for fine-tuning language models on your personal note style
+- Enhance the structured response system with more advanced Pydantic models
+- Optimize performance for larger note collections with improved caching
 ---
 
 ### HACKUSU
