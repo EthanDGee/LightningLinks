@@ -2,7 +2,14 @@ import numpy as np
 from note_handler import FileParser
 from sentence_transformers import SentenceTransformer
 from time import time
-import os
+import sys
+from pathlib import Path
+
+# Notes on path handling in this module:
+# - This script uses pathlib.Path for directory checks (Path(...).is_dir()).
+# - When invoking FileParser, prefer passing the same directory string that
+#   FileParser expects; FileParser will canonicalize paths and provide
+#   `notes_directory_posix` for stable string keys when needed.
 
 
 class LightningLinksCreator:
@@ -200,7 +207,7 @@ class LightningLinksCreator:
 
 if __name__ == "__main__":
 
-    arguments = os.sys.argv
+    arguments = sys.argv
 
     # get directory
 
@@ -214,7 +221,7 @@ if __name__ == "__main__":
         # get directory from user manually
         while True:
             note_directory = input("Enter the directory path: ")
-            if not os.path.isdir(note_directory):
+            if not Path(note_directory).is_dir():
                 print("Error: The provided path is not a valid directory. Please try again.")
             else:
                 break

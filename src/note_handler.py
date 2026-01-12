@@ -1,6 +1,12 @@
 import os
 import json
 import re
+from pathlib import Path
+
+# Path handling convention:
+# - FileParser.notes_directory: pathlib.Path (use for filesystem operations)
+# - FileParser.notes_directory_posix: posix-style string (forward-slash) used
+#   for stable storage and comparisons (keys in .obsidian JSON, file_names entries)
 
 # final variables
 NOTE_EXTENSION = ".md"
@@ -33,7 +39,12 @@ class FileParser:
             notes_directory: The directory path where note-related files are stored.
 
         """
-        self.notes_directory = notes_directory
+        # store both a Path object for filesystem ops and a posix-style string
+        # for stable, OS-independent relative path strings used elsewhere
+        self.notes_directory = Path(notes_directory)
+        # ensure posix-style (forward slashes) for compatibility with tests and
+        # for consistent relative paths across OSes
+        self.notes_directory_posix = self.notes_directory.as_posix().rstrip("/") + "/"
         self.similar_notes = self.load_similar_notes()
 
         # these are useful for cases when file data needs to be loaded
@@ -58,13 +69,13 @@ class FileParser:
         """
         # clear the file names just in case
         self.file_names = []
-
         # loop through the directory and find all notes
-        for filename in os.listdir(self.notes_directory):
+        for filename in os.listdir(self.notes_directory_posix):
             # Process Markdown files only and exclude similar files that also end with '.md'
             if filename.endswith(NOTE_EXTENSION) and not filename.endswith(EXCLUSIVE_EXTENSION):
-                filename = os.path.join(self.notes_directory, filename)
-                self.file_names.append(filename)
+                # create a stable posix-style relative path string
+                joined = f"{self.notes_directory_posix}{filename}"
+                self.file_names.append(joined)
 
         # if called by an outside program, it may be nice to immediately return the file_names
         return self.file_names
@@ -88,7 +99,7 @@ class FileParser:
         self.note_names = []
 
         # loop through the notes directory and get all note names
-        for filename in os.listdir(self.notes_directory):
+        for filename in os.listdir(self.notes_directory_posix):
             # Process Markdown files only and exclude similar files that also end with '.md'
             if filename.endswith(NOTE_EXTENSION) and not filename.endswith(EXCLUSIVE_EXTENSION):
                 filename = filename.replace(NOTE_EXTENSION, "")
@@ -308,7 +319,7 @@ class FileParser:
         formatted_links = formatted_links.replace(NOTE_EXTENSION, "")
 
         # remove any vault paths just in case
-        formatted_links = formatted_links.replace(self.notes_directory, "")
+        formatted_links = formatted_links.replace(self.notes_directory_posix, "")
 
         return formatted_links
 
@@ -370,7 +381,19 @@ class FileParser:
         # If a new file was created by this write operation, track it so helper methods
         # (like tests' delete_file) can properly detect it. Store the exact path used.
         if file_content.get('file_name') and file_content['file_name'] not in self.file_names:
-            self.file_names.append(file_content['file_name'])
+            p = Path(file_content['file_name'])
+            try:
+                if p.is_absolute():
+                    self.file_names.append(p.as_posix())
+                else:
+                    # if the provided name is already rooted in the notes directory posix base
+                    if str(file_content['file_name']).startswith(self.notes_directory_posix):
+                        self.file_names.append(file_content['file_name'])
+                    else:
+                        self.file_names.append((Path(self.notes_directory_posix) / p.as_posix()).as_posix())
+            except Exception:
+                # fallback to the provided string
+                self.file_names.append(file_content['file_name'])
 
     def update_lighting_links(self, file_path : str, similar_notes : list[str], num_lightning_links : int) -> bool:
         """
@@ -395,13 +418,13 @@ class FileParser:
         formatted_links = self.format_inline_lighting_links(similar_notes, num_lightning_links)
 
         # If the file doesn't exist, create it so subsequent operations succeed
-        if not os.path.exists(file_path):
-            # create parent directories if necessary
-            parent_dir = os.path.dirname(file_path)
-            if parent_dir and not os.path.exists(parent_dir):
-                os.makedirs(parent_dir, exist_ok=True)
-            with open(file_path, 'w', encoding=ENCODING) as _:
-                pass
+        p = Path(file_path)
+        if not p.exists():
+            parent_dir = p.parent
+            if parent_dir and not parent_dir.exists():
+                parent_dir.mkdir(parents=True, exist_ok=True)
+            # create empty file
+            p.write_text("", encoding=ENCODING)
 
         with open(file_path, 'r+', encoding=ENCODING) as file:
             # Read the entire content to work with in-memory
@@ -459,7 +482,9 @@ class FileParser:
 
         """
         similar_notes_dict = {note["file_name"]: note["similar_notes"] for note in notes}
-        with open(f"{self.notes_directory}.obsidian/similar_notes.json", 'w', encoding=ENCODING) as file:
+        obsidian_dir = Path(self.notes_directory_posix) / ".obsidian"
+        obsidian_dir.mkdir(parents=True, exist_ok=True)
+        with open((obsidian_dir / 'similar_notes.json').as_posix(), 'w', encoding=ENCODING) as file:
             json.dump(similar_notes_dict, file, indent=4)
 
     def load_similar_notes(self):
@@ -472,7 +497,7 @@ class FileParser:
         :return: A dictionary representing the contents of the `similar_notes.json` file.
         :rtype: Dict
         """
-        with open(f"{self.notes_directory}.obsidian/similar_notes.json", 'r', encoding=ENCODING) as file:
+        with open((Path(self.notes_directory_posix) / '.obsidian' / 'similar_notes.json').as_posix(), 'r', encoding=ENCODING) as file:
             similar_notes_dict = json.load(file)
         return similar_notes_dict
 
@@ -493,7 +518,7 @@ class FileParser:
         :raises KeyError: If the "lastOpenFiles" key is not found in the loaded JSON
             data.
         """
-        with open(f"{self.notes_directory}.obsidian/workspace.json", 'r', encoding=ENCODING) as file:
+        with open((Path(self.notes_directory_posix) / '.obsidian' / 'workspace.json').as_posix(), 'r', encoding=ENCODING) as file:
             last_open = json.load(file)
 
         return last_open["lastOpenFiles"][0]

@@ -5,6 +5,12 @@ import pydantic
 import os
 import torch
 
+# Notes on path handling in this module:
+# - This module relies on FileParser to manage and canonicalize note paths.
+# - Use `self.file_handler.notes_directory_posix` when constructing string keys
+#   that must match entries stored by FileParser (e.g. similarity JSON keys).
+# - Use pathlib.Path (via FileParser.notes_directory) for filesystem checks.
+
 NOTE_EXTENSION = ".md"
 
 
@@ -28,6 +34,8 @@ class SmartAssistant:
     def __init__(self, notes_directory):
         self.file_handler = FileParser(notes_directory)
         self.similar_notes = self.file_handler.load_similar_notes()
+        # convenience: posix-style base path for lookups and string joins
+        self.notes_directory_posix = self.file_handler.notes_directory_posix
 
         self.model = "gpt-4o"
         self.client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
@@ -37,7 +45,9 @@ class SmartAssistant:
         similar_bodies = ""
 
         for note in notes:
-            current_similar = self.file_handler.parse_note(f"{self.notes_directory}{note}")
+            # note may be a filename (e.g. 'example.md') — build full path
+            full = note if str(note).startswith(self.notes_directory_posix) else f"{self.notes_directory_posix}{note}"
+            current_similar = self.file_handler.parse_note(full)
             similar_bodies += f"{note}\n"
             similar_bodies += current_similar['body'] + "\n"
 
@@ -152,14 +162,17 @@ class SmartAssistant:
 
         print(f"Getting notes related to {note_name}")
 
-        note_name = f"{self.file_handler.notes_directory}{note_name}"
-        similar_notes = self.similar_notes[note_name]
-        similar_notes.append(note_name)
+        # normalize incoming note_name to the posix-style full path key used in similar_notes
+        base = self.file_handler.notes_directory_posix
+        key = note_name if str(note_name).startswith(base) else f"{base}{note_name}"
+        similar_notes = self.similar_notes[key]
+        # append the canonical key
+        similar_notes.append(key)
 
         similar_notes_parsed = ""
 
         for note in similar_notes:
-            current_similar = self.file_handler.parse_note(f"{note}")
+            current_similar = self.file_handler.parse_note(note)
             similar_notes_parsed += "file_name: " + note + "\n"
             similar_notes_parsed += "links: " + current_similar['links'] + "\n"
             similar_notes_parsed += "tags: " + current_similar['tags'] + "\n"
@@ -220,7 +233,8 @@ class SmartAssistant:
         request = self.make_open_ai_request(system_prompt, user_prompt, 0.5, NewFile)
 
         new_note = {
-            "file_name": f"{self.file_handler.notes_directory}{self.clean_up_note_name(request.file_name)}",
+            # store file_name as posix-style full path to be compatible with FileParser.file_names
+            "file_name": f"{self.file_handler.notes_directory_posix}{self.clean_up_note_name(request.file_name)}",
             "links": f'{request.links}\n',
             "tags": f'{request.tags}\n',
             "body": f'{request.body}\n',
