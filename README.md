@@ -38,7 +38,12 @@ efficient.
 
 ---
 
+
 ## Set Up
+
+### Requirements
+- python 3.11-3.14
+- poetry 1.6+
 
 To get started, ensure you have Python installed. Follow these steps:
 
@@ -52,7 +57,7 @@ git clone https://github.com/EthanDGee/lightning-links.git
 2. Install the project dependencies:
 
 ```shell script
-pip install -r requirements.txt
+poetry install
 ```
 
 3. Set up Hugging Face:
@@ -195,7 +200,7 @@ The **Lightning Links Creator** can be run quickly and easily. Just follow these
 - Use the following command to run the script in its simplest form:
 
 ``` bash
-   python lightning_links_creator.py
+   poetry run python lightning_links_creator.py
 ```
 
 4. **Enter in your notes directory**
@@ -214,13 +219,13 @@ The **Lightning Links Creator** can be run quickly and easily. Just follow these
   and can lead to slower response times in the extreme cases.
 
 ```bash 
- python lightning_links_creator.py [directory] [number of top connections to save] [number of links to add]
+ poetry run python lightning_links_creator.py [directory] [number of top connections to save] [number of links to add]
 ```
 
 Example
 
 ```bash 
- python lightning_links_creator.py myNotes/ 25 10
+ poetry run python lightning_links_creator.py myNotes/ 25 10
 ```
 
 ### Smart Assistant (Zeus)
@@ -247,7 +252,7 @@ Example
 - Use the following command to run the script in its simplest form:
 
 ``` bash
-   python smart_assistant.py
+   poetry run python smart_assistant.py
 ```
 
 4. **Enter in your notes directory**
@@ -288,16 +293,9 @@ branch, and open a pull request.
 - Port the Project to an Obsidian Plugin for ease of use
 - Expand notes compatibility (e.g., plain text files or other formats beyond Markdown)
 - Add support for folder-based organization within Obsidian for advanced organization
-- Implement more advanced embedding models for even better similarity detection
-- Add support for fine-tuning language models on your personal note style
-- Enhance the structured response system with more advanced Pydantic models
 - Optimize performance for larger note collections with improved caching
 
 ---
-
-### HACKUSU
-
-This project was made over the course of 18 hours for the [HackUSU 25](https://huntsman.usu.edu/hackusu/)
 
 ## License
 
@@ -306,8 +304,5 @@ This project is licensed under the MIT License. Please refer to the `LICENSE` fi
 ---
 
 Take your note-taking to the next level with **Lightning Links**! Let the automation connect your ideas, suggest new
-ones, and grow your Zettelkasten seamlessly! 🚀
+ones, and grow your Zettelkasten seamlessly! 
 
---- 
-
-Let me know if you'd like further refinements! 😊
