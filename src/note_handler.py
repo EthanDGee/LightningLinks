@@ -1,18 +1,13 @@
-import os
 import json
+import os
 import re
 from pathlib import Path
-
-# Path handling convention:
-# - FileParser.notes_directory: pathlib.Path (use for filesystem operations)
-# - FileParser.notes_directory_posix: posix-style string (forward-slash) used
-#   for stable storage and comparisons (keys in .obsidian JSON, file_names entries)
 
 # final variables
 NOTE_EXTENSION = ".md"
 EXCLUSIVE_EXTENSION = ".excalidraw.md"
 LIGHTNING_LINKS_HEADER = "### Lightning Links"
-ENCODING = 'utf-8'
+ENCODING = "utf-8"
 LINK_START = "[["
 LINK_END = "]]"
 YAML_INDICATOR = "---\n"
@@ -20,7 +15,7 @@ TAG_INDICATOR = "#"
 
 
 class FileParser:
-    def __init__(self, notes_directory : str):
+    def __init__(self, notes_directory: str):
         """
         Represents a class that initializes and manages note-related attributes like file names,
         note names, and similar notes from a specified directory. It supports loading and maintaining
@@ -39,12 +34,7 @@ class FileParser:
             notes_directory: The directory path where note-related files are stored.
 
         """
-        # store both a Path object for filesystem ops and a posix-style string
-        # for stable, OS-independent relative path strings used elsewhere
-        self.notes_directory = Path(notes_directory)
-        # ensure posix-style (forward slashes) for compatibility with tests and
-        # for consistent relative paths across OSes
-        self.notes_directory_posix = self.notes_directory.as_posix().rstrip("/") + "/"
+        self.notes_directory = Path(notes_directory).as_posix().rstrip("/") + "/"
         self.similar_notes = self.load_similar_notes()
 
         # these are useful for cases when file data needs to be loaded
@@ -70,11 +60,13 @@ class FileParser:
         # clear the file names just in case
         self.file_names = []
         # loop through the directory and find all notes
-        for filename in os.listdir(self.notes_directory_posix):
+        for filename in os.listdir(self.notes_directory):
             # Process Markdown files only and exclude similar files that also end with '.md'
-            if filename.endswith(NOTE_EXTENSION) and not filename.endswith(EXCLUSIVE_EXTENSION):
+            if filename.endswith(NOTE_EXTENSION) and not filename.endswith(
+                EXCLUSIVE_EXTENSION
+            ):
                 # create a stable posix-style relative path string
-                joined = f"{self.notes_directory_posix}{filename}"
+                joined = f"{self.notes_directory}{filename}"
                 self.file_names.append(joined)
 
         # if called by an outside program, it may be nice to immediately return the file_names
@@ -99,9 +91,11 @@ class FileParser:
         self.note_names = []
 
         # loop through the notes directory and get all note names
-        for filename in os.listdir(self.notes_directory_posix):
+        for filename in os.listdir(self.notes_directory):
             # Process Markdown files only and exclude similar files that also end with '.md'
-            if filename.endswith(NOTE_EXTENSION) and not filename.endswith(EXCLUSIVE_EXTENSION):
+            if filename.endswith(NOTE_EXTENSION) and not filename.endswith(
+                EXCLUSIVE_EXTENSION
+            ):
                 filename = filename.replace(NOTE_EXTENSION, "")
                 self.note_names.append(filename)
 
@@ -136,14 +130,14 @@ class FileParser:
         # loop through all note files
         for file_path in self.file_names:
             # Read the file's contents
-            with open(file_path, 'r', encoding=ENCODING) as file:
+            with open(file_path, "r", encoding=ENCODING) as file:
                 lines = file.readlines()
 
             # Check if the file is not empty and does not end with an empty line, or if it's already formatted
             if len(lines) != 0 and check_last_two_lines(lines[-2:]):
                 # Append an empty line
-                with open(file_path, 'a', encoding=ENCODING) as file:
-                    file.write('\n')
+                with open(file_path, "a", encoding=ENCODING) as file:
+                    file.write("\n")
 
     @staticmethod
     def parse_note(file_path: str):
@@ -164,7 +158,6 @@ class FileParser:
         def is_tag(line):
             # checks to see if a given line is a tag, this a more complex check, so it is broken into it's function
             if line.startswith("#"):
-
                 # check to see if it's a header (which would have a space between the word andor multiple hashtags)
                 if line.startswith(TAG_INDICATOR + " "):  # H1 Header
                     return False
@@ -180,7 +173,7 @@ class FileParser:
         note_info = {"links": "", "tags": "", "body": "", "smart_links": "", "YAML": ""}
 
         # Open the file and iterate through its contents
-        with open(file_path, 'r', encoding=ENCODING) as file:
+        with open(file_path, "r", encoding=ENCODING) as file:
             current_line = file.readline()
             # check for YAML and parse YAML if found
 
@@ -202,11 +195,15 @@ class FileParser:
 
             # Parse links (header section)
             # check for a links section and add to contents
-            has_links = current_line.startswith(LINK_START) and current_line.endswith(LINK_END + "\n")
+            has_links = current_line.startswith(LINK_START) and current_line.endswith(
+                LINK_END + "\n"
+            )
 
             if has_links:
                 while current_line:
-                    if current_line.startswith(LINK_START) and current_line.endswith(LINK_END + "\n"):
+                    if current_line.startswith(LINK_START) and current_line.endswith(
+                        LINK_END + "\n"
+                    ):
                         note_info["links"] += current_line
                     else:
                         break  # Exit loop when we encounter a non-link line
@@ -263,7 +260,7 @@ class FileParser:
         return all_files
 
     @staticmethod
-    def parse_inline_lightning_links(line : str) -> list[str]:
+    def parse_inline_lightning_links(line: str) -> list[str]:
         """
         Parses a formatted line containing lightning links taken from a note into a list of associated files.
 
@@ -294,7 +291,9 @@ class FileParser:
 
         return links
 
-    def format_inline_lighting_links(self, similar_notes : list[str], num_lightning_links: int):
+    def format_inline_lighting_links(
+        self, similar_notes: list[str], num_lightning_links: int
+    ):
         """
         Formats a specified number of similar notes into a single inline lightning link. The
         method concatenates the links, adds necessary bookends, and ensures that unnecessary
@@ -312,14 +311,16 @@ class FileParser:
         """
         # join a specified number of similar notes into a line
         # format middle
-        formatted_links = f"{LINK_END}     {LINK_START}".join(similar_notes[:num_lightning_links])
+        formatted_links = f"{LINK_END}     {LINK_START}".join(
+            similar_notes[:num_lightning_links]
+        )
         formatted_links = f"{LINK_START}{formatted_links}{LINK_END}"  # add bookends
 
         # remove the note extensions from links
         formatted_links = formatted_links.replace(NOTE_EXTENSION, "")
 
         # remove any vault paths just in case
-        formatted_links = formatted_links.replace(self.notes_directory_posix, "")
+        formatted_links = formatted_links.replace(self.notes_directory, "")
 
         return formatted_links
 
@@ -352,7 +353,7 @@ class FileParser:
             "links": "",
             "tags": "",
             "body": "",
-            "similar_notes": []
+            "similar_notes": [],
         }
 
         # Ensure all keys exist
@@ -360,7 +361,7 @@ class FileParser:
             if key not in file_content:
                 file_content[key] = value
 
-        with open(f"{file_content['file_name']}", 'w', encoding=ENCODING) as file:
+        with open(f"{file_content['file_name']}", "w", encoding=ENCODING) as file:
             if file_content["YAML"] != "":
                 file.write(file_content["YAML"])
             file.write(file_content["links"])
@@ -369,33 +370,44 @@ class FileParser:
             file.write(file_content["body"])
 
             # remove self if there
-            if file_content['file_name'] in file_content["similar_notes"]:
-                file_content["similar_notes"].remove(file_content['file_name'])
+            if file_content["file_name"] in file_content["similar_notes"]:
+                file_content["similar_notes"].remove(file_content["file_name"])
 
             # add header
             file.write(LIGHTNING_LINKS_HEADER + "\n")
 
             # add all notes in one line
-            file.write(self.format_inline_lighting_links(file_content["similar_notes"], num_lightning_links))
+            file.write(
+                self.format_inline_lighting_links(
+                    file_content["similar_notes"], num_lightning_links
+                )
+            )
 
         # If a new file was created by this write operation, track it so helper methods
         # (like tests' delete_file) can properly detect it. Store the exact path used.
-        if file_content.get('file_name') and file_content['file_name'] not in self.file_names:
-            p = Path(file_content['file_name'])
+        if (
+            file_content.get("file_name")
+            and file_content["file_name"] not in self.file_names
+        ):
+            p = Path(file_content["file_name"])
             try:
                 if p.is_absolute():
                     self.file_names.append(p.as_posix())
                 else:
                     # if the provided name is already rooted in the notes directory posix base
-                    if str(file_content['file_name']).startswith(self.notes_directory_posix):
-                        self.file_names.append(file_content['file_name'])
+                    if str(file_content["file_name"]).startswith(self.notes_directory):
+                        self.file_names.append(file_content["file_name"])
                     else:
-                        self.file_names.append((Path(self.notes_directory_posix) / p.as_posix()).as_posix())
+                        self.file_names.append(
+                            (Path(self.notes_directory) / p.as_posix()).as_posix()
+                        )
             except Exception:
                 # fallback to the provided string
-                self.file_names.append(file_content['file_name'])
+                self.file_names.append(file_content["file_name"])
 
-    def update_lighting_links(self, file_path : str, similar_notes : list[str], num_lightning_links : int) -> bool:
+    def update_lighting_links(
+        self, file_path: str, similar_notes: list[str], num_lightning_links: int
+    ) -> bool:
         """
         Updates or adds lightning links in the provided file.
 
@@ -415,7 +427,9 @@ class FileParser:
         """
         # takes in a note path and lightning link and adds/updates lightning links if changes have been made.
 
-        formatted_links = self.format_inline_lighting_links(similar_notes, num_lightning_links)
+        formatted_links = self.format_inline_lighting_links(
+            similar_notes, num_lightning_links
+        )
 
         # If the file doesn't exist, create it so subsequent operations succeed
         p = Path(file_path)
@@ -426,7 +440,7 @@ class FileParser:
             # create empty file
             p.write_text("", encoding=ENCODING)
 
-        with open(file_path, 'r+', encoding=ENCODING) as file:
+        with open(file_path, "r+", encoding=ENCODING) as file:
             # Read the entire content to work with in-memory
             lines = file.readlines()
             # If file is empty, write header + links and return
@@ -481,10 +495,14 @@ class FileParser:
         :type notes: List[dict]
 
         """
-        similar_notes_dict = {note["file_name"]: note["similar_notes"] for note in notes}
-        obsidian_dir = Path(self.notes_directory_posix) / ".obsidian"
+        similar_notes_dict = {
+            note["file_name"]: note["similar_notes"] for note in notes
+        }
+        obsidian_dir = Path(self.notes_directory) / ".obsidian"
         obsidian_dir.mkdir(parents=True, exist_ok=True)
-        with open((obsidian_dir / 'similar_notes.json').as_posix(), 'w', encoding=ENCODING) as file:
+        with open(
+            (obsidian_dir / "similar_notes.json").as_posix(), "w", encoding=ENCODING
+        ) as file:
             json.dump(similar_notes_dict, file, indent=4)
 
     def load_similar_notes(self):
@@ -497,7 +515,13 @@ class FileParser:
         :return: A dictionary representing the contents of the `similar_notes.json` file.
         :rtype: Dict
         """
-        with open((Path(self.notes_directory_posix) / '.obsidian' / 'similar_notes.json').as_posix(), 'r', encoding=ENCODING) as file:
+        with open(
+            (
+                Path(self.notes_directory) / ".obsidian" / "similar_notes.json"
+            ).as_posix(),
+            "r",
+            encoding=ENCODING,
+        ) as file:
             similar_notes_dict = json.load(file)
         return similar_notes_dict
 
@@ -518,7 +542,11 @@ class FileParser:
         :raises KeyError: If the "lastOpenFiles" key is not found in the loaded JSON
             data.
         """
-        with open((Path(self.notes_directory_posix) / '.obsidian' / 'workspace.json').as_posix(), 'r', encoding=ENCODING) as file:
+        with open(
+            (Path(self.notes_directory) / ".obsidian" / "workspace.json").as_posix(),
+            "r",
+            encoding=ENCODING,
+        ) as file:
             last_open = json.load(file)
 
         return last_open["lastOpenFiles"][0]

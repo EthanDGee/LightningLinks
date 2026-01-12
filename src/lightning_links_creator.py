@@ -1,42 +1,39 @@
-import numpy as np
-from note_handler import FileParser
-from sentence_transformers import SentenceTransformer
-from time import time
 import sys
 from pathlib import Path
+from time import time
 
-# Notes on path handling in this module:
-# - This script uses pathlib.Path for directory checks (Path(...).is_dir()).
-# - When invoking FileParser, prefer passing the same directory string that
-#   FileParser expects; FileParser will canonicalize paths and provide
-#   `notes_directory_posix` for stable string keys when needed.
+import numpy as np
+from sentence_transformers import SentenceTransformer
+
+from note_handler import FileParser
 
 
 class LightningLinksCreator:
-
-    def __init__(self, vault_path: str, num_lightning_links: int = 3, num_similar_notes: int = 10):
+    def __init__(
+        self, vault_path: str, num_lightning_links: int = 3, num_similar_notes: int = 10
+    ):
         """
-            A class for generating, managing, and updating similarity-based lightning links
-            across a collection of notes.
+        A class for generating, managing, and updating similarity-based lightning links
+        across a collection of notes.
 
-            This class uses sentence embeddings to calculate similarities between notes
-            and updates the notes with the most similar ones. It integrates file handling,
-            similarity computation, and updating processes for efficient management of
-            lightning links in a given vault.
+        This class uses sentence embeddings to calculate similarities between notes
+        and updates the notes with the most similar ones. It integrates file handling,
+        similarity computation, and updating processes for efficient management of
+        lightning links in a given vault.
 
-            Attributes:
-                model (SentenceTransformer): The pre-trained SentenceTransformer model used
-                    for encoding sentences and calculating similarities.
-                file_handler (FileParser): An instance of the `FileParser` class responsible
-                    for file reading, note management, and file updates.
-                num_lightning_links (int): The maximum number of lightning links to be
-                    added to each note.
-                num_similar_notes (int): The number of top similar notes to consider
-                    for updates.
-            """
+        Attributes:
+            model (SentenceTransformer): The pre-trained SentenceTransformer model used
+                for encoding sentences and calculating similarities.
+            file_handler (FileParser): An instance of the `FileParser` class responsible
+                for file reading, note management, and file updates.
+            num_lightning_links (int): The maximum number of lightning links to be
+                added to each note.
+            num_similar_notes (int): The number of top similar notes to consider
+                for updates.
+        """
 
         # load model Source: https://huggingface.co/sentence-transformers/all-mpnet-base-v2
-        self.model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
+        self.model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
         self.file_handler = FileParser(vault_path)
         self.num_lightning_links = num_lightning_links
         self.num_similar_notes = num_similar_notes
@@ -95,7 +92,7 @@ class LightningLinksCreator:
         if self.num_similar_notes == 0:
             return []
 
-        top_n_indexes = np.argsort(row)[::-1][1:self.num_similar_notes + 1]
+        top_n_indexes = np.argsort(row)[::-1][1 : self.num_similar_notes + 1]
 
         return top_n_indexes
 
@@ -121,7 +118,9 @@ class LightningLinksCreator:
 
         return top_n_indexes_table
 
-    def update_notes_with_similarities(self, notes, top_n_similarities_indexes: list[list]):
+    def update_notes_with_similarities(
+        self, notes, top_n_similarities_indexes: list[list]
+    ):
         """
         Updates notes with a list of the most similar notes based on their indexes and optionally
         updates associated files with lighting links.
@@ -141,9 +140,14 @@ class LightningLinksCreator:
         """
         total_notes_updated = 0
         for i, similarity_indexes in enumerate(top_n_similarities_indexes):
-            notes[i]["similar_notes"] = [notes[sim_idx]["file_name"] for sim_idx in similarity_indexes]
-            if self.file_handler.update_lighting_links(notes[i]["file_name"], notes[i]["similar_notes"],
-                                                       self.num_lightning_links):
+            notes[i]["similar_notes"] = [
+                notes[sim_idx]["file_name"] for sim_idx in similarity_indexes
+            ]
+            if self.file_handler.update_lighting_links(
+                notes[i]["file_name"],
+                notes[i]["similar_notes"],
+                self.num_lightning_links,
+            ):
                 total_notes_updated += 1
 
         return total_notes_updated
@@ -195,8 +199,10 @@ class LightningLinksCreator:
         print("Updating Lighting Links...", end="")
         # append to file ends
 
-        notes_updated = self.update_notes_with_similarities(notes, top_n_similarities_indexes)
-        print(F"\nTotal Lighting Links Updated: {notes_updated}\n")
+        notes_updated = self.update_notes_with_similarities(
+            notes, top_n_similarities_indexes
+        )
+        print(f"\nTotal Lighting Links Updated: {notes_updated}\n")
 
         print(f"\rLightning Links Updated! {time() - start_time}")
         print("Saving Similarities...", end="")
@@ -206,7 +212,6 @@ class LightningLinksCreator:
 
 
 if __name__ == "__main__":
-
     arguments = sys.argv
 
     # get directory
@@ -222,7 +227,9 @@ if __name__ == "__main__":
         while True:
             note_directory = input("Enter the directory path: ")
             if not Path(note_directory).is_dir():
-                print("Error: The provided path is not a valid directory. Please try again.")
+                print(
+                    "Error: The provided path is not a valid directory. Please try again."
+                )
             else:
                 break
 
@@ -241,6 +248,9 @@ if __name__ == "__main__":
     else:
         lightning_links_count = 3
 
-    creator = LightningLinksCreator(note_directory, num_lightning_links=lightning_links_count,
-                                    num_similar_notes=similar_count)
+    creator = LightningLinksCreator(
+        note_directory,
+        num_lightning_links=lightning_links_count,
+        num_similar_notes=similar_count,
+    )
     creator.refresh_similarities()

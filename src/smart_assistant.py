@@ -1,15 +1,12 @@
-from openai import OpenAI
-from note_handler import FileParser
-from typing import Type
-import pydantic
 import os
-import torch
+from typing import Type
 
-# Notes on path handling in this module:
-# - This module relies on FileParser to manage and canonicalize note paths.
-# - Use `self.file_handler.notes_directory_posix` when constructing string keys
-#   that must match entries stored by FileParser (e.g. similarity JSON keys).
-# - Use pathlib.Path (via FileParser.notes_directory) for filesystem checks.
+import pydantic
+import torch
+from openai import OpenAI
+
+from note_handler import FileParser
+
 
 NOTE_EXTENSION = ".md"
 
@@ -35,7 +32,7 @@ class SmartAssistant:
         self.file_handler = FileParser(notes_directory)
         self.similar_notes = self.file_handler.load_similar_notes()
         # convenience: posix-style base path for lookups and string joins
-        self.notes_directory_posix = self.file_handler.notes_directory_posix
+        self.notes_directory = self.file_handler.notes_directory
 
         self.model = "gpt-4o"
         self.client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
@@ -46,14 +43,24 @@ class SmartAssistant:
 
         for note in notes:
             # note may be a filename (e.g. 'example.md') — build full path
-            full = note if str(note).startswith(self.notes_directory_posix) else f"{self.notes_directory_posix}{note}"
+            full = (
+                note
+                if str(note).startswith(self.notes_directory)
+                else f"{self.notes_directory}{note}"
+            )
             current_similar = self.file_handler.parse_note(full)
             similar_bodies += f"{note}\n"
-            similar_bodies += current_similar['body'] + "\n"
+            similar_bodies += current_similar["body"] + "\n"
 
         return similar_bodies
 
-    def make_open_ai_request(self, system: str, user: str, temp: float, structure: Type[pydantic.BaseModel] = None):
+    def make_open_ai_request(
+        self,
+        system: str,
+        user: str,
+        temp: float,
+        structure: Type[pydantic.BaseModel] = None,
+    ):
         """
         Makes a request to OpenAI's API for generating a completion based on the provided
         prompts, model, temperature, and desired response format.
@@ -85,8 +92,8 @@ class SmartAssistant:
                 temperature=temp,
                 messages=[
                     {"role": "system", "content": system},
-                    {"role": "user", "content": user}
-                ]
+                    {"role": "user", "content": user},
+                ],
             )
 
             return completion.choices[0].message.content
@@ -96,7 +103,7 @@ class SmartAssistant:
                 temperature=temp,
                 messages=[
                     {"role": "system", "content": system},
-                    {"role": "user", "content": user}
+                    {"role": "user", "content": user},
                 ],
                 response_format=structure,
             )
@@ -122,7 +129,8 @@ class SmartAssistant:
 
         system_prompt = (
             "You are a research assistant who's job is to suggest the most relevant file for a given prompt."
-            " and return its name making sure to select one from list of files provided. ")
+            " and return its name making sure to select one from list of files provided. "
+        )
 
         all_note_names = ""
 
@@ -135,7 +143,9 @@ class SmartAssistant:
 
         print("Looking for relevant file...")
 
-        suggestion = self.make_open_ai_request(system_prompt, user_prompt, temperature, FileName)
+        suggestion = self.make_open_ai_request(
+            system_prompt, user_prompt, temperature, FileName
+        )
 
         return suggestion.file_name + NOTE_EXTENSION
 
@@ -174,9 +184,9 @@ class SmartAssistant:
         for note in similar_notes:
             current_similar = self.file_handler.parse_note(note)
             similar_notes_parsed += "file_name: " + note + "\n"
-            similar_notes_parsed += "links: " + current_similar['links'] + "\n"
-            similar_notes_parsed += "tags: " + current_similar['tags'] + "\n"
-            similar_notes_parsed += "body: " + current_similar['body'] + "\n"
+            similar_notes_parsed += "links: " + current_similar["links"] + "\n"
+            similar_notes_parsed += "tags: " + current_similar["tags"] + "\n"
+            similar_notes_parsed += "body: " + current_similar["body"] + "\n"
             similar_notes_parsed += "\n"
 
         return similar_notes_parsed
@@ -235,10 +245,10 @@ class SmartAssistant:
         new_note = {
             # store file_name as posix-style full path to be compatible with FileParser.file_names
             "file_name": f"{self.file_handler.notes_directory_posix}{self.clean_up_note_name(request.file_name)}",
-            "links": f'{request.links}\n',
-            "tags": f'{request.tags}\n',
-            "body": f'{request.body}\n',
-            "similar_notes": request.similar_notes
+            "links": f"{request.links}\n",
+            "tags": f"{request.tags}\n",
+            "body": f"{request.body}\n",
+            "similar_notes": request.similar_notes,
         }
 
         # save note using note_handler.write_note
@@ -293,9 +303,13 @@ class SmartAssistant:
 
         user_prompt = f"""\nSimilar Notes: \n{similar_notes_parsed} \n All Available Notes\n {all_note_names}"""
 
-        response = self.make_open_ai_request(system_prompt, user_prompt, 0.5, Suggestion)
+        response = self.make_open_ai_request(
+            system_prompt, user_prompt, 0.5, Suggestion
+        )
 
-        print(f"Looking at your notes it seems best to create a note about {response.suggestion}")
+        print(
+            f"Looking at your notes it seems best to create a note about {response.suggestion}"
+        )
         print("Here's why I think you should: \n" + response.reasoning + "\n")
 
         question = "Would you like to create this note? (y/n)"
@@ -397,7 +411,6 @@ class SmartAssistant:
 
 
 if __name__ == "__main__":
-
     arguments = os.sys.argv
 
     if len(arguments) > 1:
@@ -405,12 +418,16 @@ if __name__ == "__main__":
     else:
         print(torch.cuda.is_available())
         print("Welcome to the Lightning Notes Assistant!")
-        print("The best way to find holes in your notes, and automagically create plugs to fill them")
+        print(
+            "The best way to find holes in your notes, and automagically create plugs to fill them"
+        )
         print("To get started, please enter the directory where your notes are stored")
         while True:
             directory = input("Enter the directory path: ")
             if not os.path.isdir(directory):
-                print("Error: The provided path is not a valid directory. Please try again.")
+                print(
+                    "Error: The provided path is not a valid directory. Please try again."
+                )
             else:
                 break
     # initiate smart assistant
@@ -421,10 +438,13 @@ if __name__ == "__main__":
     print("Currently, we have three tools:")
     print(
         "1. Suggest: This looks at the notes you've been looking at recently and suggests a topic that you might want "
-        "to add to your notes.")
+        "to add to your notes."
+    )
     print("2. Create: This creates a new note based on the topic you suggest.")
-    print("3. Ask yourself a question about your notes: This allows you to ask questions about your notes and get a "
-          "response back.")
+    print(
+        "3. Ask yourself a question about your notes: This allows you to ask questions about your notes and get a "
+        "response back."
+    )
     print("\nTo get started, please enter the command you would like to use:")
     while True:
         print("\n\nAvailable commands:")
@@ -434,13 +454,15 @@ if __name__ == "__main__":
         print("p: Summarize")
         print("q: Quit")
         command = input("Enter your choice (s/c/a/q): ").lower()
-        if command == 's':
+        if command == "s":
             smart_assistant.suggest()
-        if command == 'c':
+        if command == "c":
             smart_assistant.create(input("Enter the topic you would like to create: "))
-        if command == 'a':
+        if command == "a":
             smart_assistant.ask_yourself(input("Enter your question: "))
-        if command == 'p':
-            smart_assistant.summarize(input("Enter the topic you would like a summary of: "))
-        if command == 'q':
+        if command == "p":
+            smart_assistant.summarize(
+                input("Enter the topic you would like a summary of: ")
+            )
+        if command == "q":
             break
