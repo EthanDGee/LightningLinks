@@ -497,5 +497,84 @@ class TestFileParser(unittest.TestCase):
         self.compare_files('contains YAML.md', f'{self.test_vault}temp contains YAML.md')
         self.delete_file(f'{self.test_vault}temp contains YAML.md')
 
+    def test_update_lighting_links_on_empty_file(self):
+        # create an empty temp file
+        temp_path = f'{self.test_vault}temp_empty.md'
+        with open(temp_path, 'w') as f:
+            pass
+
+        similar = ['science.md', 'electronics.md', 'money.md']
+        # should return True (file updated)
+        updated = self.file_parser.update_lighting_links(temp_path, similar, 3)
+        self.assertTrue(updated)
+
+        # verify the file now contains header and formatted links
+        with open(temp_path, 'r') as f:
+            contents = f.read()
+
+        expected_links = self.file_parser.format_inline_lighting_links(similar, 3)
+        self.assertIn('### Lightning Links', contents)
+        self.assertIn(expected_links, contents)
+
+        # cleanup
+        if temp_path in self.file_parser.file_names:
+            # write_to_file may register files; ensure deletion uses full path
+            os.remove(temp_path)
+        else:
+            os.remove(temp_path)
+
+    def test_update_lighting_links_no_change(self):
+        # Create a file with an existing lightning links section matching the formatted links
+        temp_path = f'{self.test_vault}temp_no_change.md'
+        similar = ['science.md', 'electronics.md']
+        formatted = self.file_parser.format_inline_lighting_links(similar, 2)
+        with open(temp_path, 'w') as f:
+            f.write('Some body text\n')
+            f.write('### Lightning Links\n')
+            f.write(formatted + '\n')
+
+        # calling update should detect no change and return False
+        updated = self.file_parser.update_lighting_links(temp_path, similar, 2)
+        self.assertFalse(updated)
+
+        # cleanup
+        os.remove(temp_path)
+
+    def test_save_and_load_similar_notes(self):
+        # write a mapping and verify load_similar_notes reads it back
+        notes = [
+            {"file_name": f'{self.test_vault}a.md', "similar_notes": ["b.md"]},
+            {"file_name": f'{self.test_vault}b.md', "similar_notes": ["a.md"]}
+        ]
+        # save using FileParser method
+        self.file_parser.save_similar_notes(notes)
+
+        # ensure file exists and load_similar_notes returns mapping containing our entries
+        loaded = self.file_parser.load_similar_notes()
+        # keys in saved file are the full paths as used in save_similar_notes
+        expected_key = f'{self.test_vault}a.md'
+        self.assertIn(expected_key, loaded)
+
+    def test_write_to_file_registers_filename(self):
+        temp_path = f'{self.test_vault}temp_register.md'
+        file_contents = {
+            "file_name": temp_path,
+            "YAML": self.empty_yaml,
+            "links": "",
+            "tags": "",
+            "body": "Body text\n",
+            "similar_notes": []
+        }
+        # ensure not present initially
+        if temp_path in self.file_parser.file_names:
+            self.file_parser.file_names.remove(temp_path)
+
+        self.file_parser.write_to_file(file_contents, 0)
+        # after writing, should be recorded in file_names
+        self.assertIn(temp_path, self.file_parser.file_names)
+
+        # cleanup
+        os.remove(temp_path)
+
 if __name__ == '__main__':
     unittest.main()

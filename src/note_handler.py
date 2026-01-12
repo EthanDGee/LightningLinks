@@ -367,6 +367,11 @@ class FileParser:
             # add all notes in one line
             file.write(self.format_inline_lighting_links(file_content["similar_notes"], num_lightning_links))
 
+        # If a new file was created by this write operation, track it so helper methods
+        # (like tests' delete_file) can properly detect it. Store the exact path used.
+        if file_content.get('file_name') and file_content['file_name'] not in self.file_names:
+            self.file_names.append(file_content['file_name'])
+
     def update_lighting_links(self, file_path : str, similar_notes : list[str], num_lightning_links : int) -> bool:
         """
         Updates or adds lightning links in the provided file.
@@ -389,9 +394,25 @@ class FileParser:
 
         formatted_links = self.format_inline_lighting_links(similar_notes, num_lightning_links)
 
+        # If the file doesn't exist, create it so subsequent operations succeed
+        if not os.path.exists(file_path):
+            # create parent directories if necessary
+            parent_dir = os.path.dirname(file_path)
+            if parent_dir and not os.path.exists(parent_dir):
+                os.makedirs(parent_dir, exist_ok=True)
+            with open(file_path, 'w', encoding=ENCODING) as _:
+                pass
+
         with open(file_path, 'r+', encoding=ENCODING) as file:
             # Read the entire content to work with in-memory
             lines = file.readlines()
+            # If file is empty, write header + links and return
+            if not lines:
+                file.seek(0)
+                file.writelines([LIGHTNING_LINKS_HEADER + "\n", formatted_links + "\n"])
+                file.truncate()
+                return True
+
             found_section = False
 
             # Locate the Lightning Links header

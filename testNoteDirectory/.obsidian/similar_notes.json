@@ -1,0 +1,8 @@
+{
+    "testNoteDirectory/a.md": [
+        "b.md"
+    ],
+    "testNoteDirectory/b.md": [
+        "a.md"
+    ]
+}
