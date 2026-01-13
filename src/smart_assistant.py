@@ -1,14 +1,20 @@
 import os
+import json
 from typing import Type
 
+import ollama
 import pydantic
 import torch
 from openai import OpenAI
 
-from note_handler import FileParser
-
-
-NOTE_EXTENSION = ".md"
+from src.constants import (
+    NOTE_EXTENSION,
+    AI_PROVIDER,
+    OPENAI_MODEL,
+    OLLAMA_MODEL,
+    OLLAMA_HOST,
+)
+from src.note_handler import FileParser
 
 
 class SmartAssistant:
@@ -34,8 +40,13 @@ class SmartAssistant:
         # convenience: posix-style base path for lookups and string joins
         self.notes_directory = self.file_handler.notes_directory
 
-        self.model = "gpt-4o"
-        self.client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
+        self.ai_provider = AI_PROVIDER
+        if self.ai_provider == "ollama":
+            self.model = OLLAMA_MODEL
+            self.client = ollama.Client(host=OLLAMA_HOST)
+        else:
+            self.model = OPENAI_MODEL
+            self.client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
     def get_core_similar_notes(self, notes):
         # a much simpler version of parse_similar() that only gets the body and file name for each note.
@@ -54,12 +65,8 @@ class SmartAssistant:
 
         return similar_bodies
 
-    def make_open_ai_request(
-        self,
-        system: str,
-        user: str,
-        temp: float,
-        structure: Type[pydantic.BaseModel] = None,
+    def make_openai_request(
+        self, system: str, user: str, temp: float, structure: Type[pydantic.BaseModel] = None
     ):
         """
         Makes a request to OpenAI's API for generating a completion based on the provided
@@ -107,8 +114,44 @@ class SmartAssistant:
                 ],
                 response_format=structure,
             )
+        return completion.choices[0].message.parsed
 
-            return completion.choices[0].message.parsed
+    def make_ollama_request(
+        self, system: str, user: str, temp: float, structure: Type[pydantic.BaseModel] = None
+    ):
+        messages = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ]
+        options = {"temperature": temp}
+
+        if structure:
+            response = self.client.chat(
+                model=self.model,
+                messages=messages,
+                format="json",
+                options=options,
+            )
+            response_content = response["message"]["content"]
+            # The response content is a JSON string. We need to parse it.
+            json_content = json.loads(response_content)
+            # Then validate with pydantic
+            return structure.model_validate(json_content)
+        else:
+            response = self.client.chat(
+                model=self.model,
+                messages=messages,
+                options=options,
+            )
+            return response["message"]["content"]
+
+    def make_ai_request(
+        self, system: str, user: str, temp: float, structure: Type[pydantic.BaseModel] = None
+    ):
+        if self.ai_provider == "ollama":
+            return self.make_ollama_request(system, user, temp, structure)
+        else:
+            return self.make_openai_request(system, user, temp, structure)
 
     def recommend_note(self, prompt: str):
         """
@@ -143,7 +186,7 @@ class SmartAssistant:
 
         print("Looking for relevant file...")
 
-        suggestion = self.make_open_ai_request(
+        suggestion = self.make_ai_request(
             system_prompt, user_prompt, temperature, FileName
         )
 
@@ -173,7 +216,7 @@ class SmartAssistant:
         print(f"Getting notes related to {note_name}")
 
         # normalize incoming note_name to the posix-style full path key used in similar_notes
-        base = self.file_handler.notes_directory_posix
+        base = self.file_handler.notes_directory
         key = note_name if str(note_name).startswith(base) else f"{base}{note_name}"
         similar_notes = self.similar_notes[key]
         # append the canonical key
@@ -240,11 +283,11 @@ class SmartAssistant:
         user_prompt = f"""{prompt} \nSimilar Notes: \n{similar_notes_parsed} \n All Available Links\n {all_note_names}"""
 
         # request
-        request = self.make_open_ai_request(system_prompt, user_prompt, 0.5, NewFile)
+        request = self.make_ai_request(system_prompt, user_prompt, 0.5, NewFile)
 
         new_note = {
             # store file_name as posix-style full path to be compatible with FileParser.file_names
-            "file_name": f"{self.file_handler.notes_directory_posix}{self.clean_up_note_name(request.file_name)}",
+            "file_name": f"{self.file_handler.notes_directory}{self.clean_up_note_name(request.file_name)}",
             "links": f"{request.links}\n",
             "tags": f"{request.tags}\n",
             "body": f"{request.body}\n",
@@ -303,7 +346,7 @@ class SmartAssistant:
 
         user_prompt = f"""\nSimilar Notes: \n{similar_notes_parsed} \n All Available Notes\n {all_note_names}"""
 
-        response = self.make_open_ai_request(
+        response = self.make_ai_request(
             system_prompt, user_prompt, 0.5, Suggestion
         )
 
@@ -358,7 +401,7 @@ class SmartAssistant:
 
         user_prompt = prompt + "\n\n\nNotes:\n" + extracted_references
 
-        response = self.make_open_ai_request(system_prompt, user_prompt, 0.4)
+        response = self.make_ai_request(system_prompt, user_prompt, 0.4)
 
         print(response)
         return response
@@ -390,7 +433,7 @@ class SmartAssistant:
 
         user_prompt = f"Topic Prompt: {prompt}\nSource Material:\n{sources}"
 
-        response = self.make_open_ai_request(system_prompt, user_prompt, 0.7)
+        response = self.make_ai_request(system_prompt, user_prompt, 0.7)
         print(response)
 
         return response

@@ -24,3 +24,13 @@ EMBEDDING_MODEL = os.getenv(
     "EMBEDDING_MODEL", "sentence-transformers/all-mpnet-base-v2"
 )
 
+# AI Provider
+AI_PROVIDER = os.getenv("AI_PROVIDER", "ollama")
+
+
+# OpenAI Configuration
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
+
+# Ollama Configuration
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
