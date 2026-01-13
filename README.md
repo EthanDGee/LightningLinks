@@ -43,7 +43,7 @@ efficient.
 
 ### Requirements
 - python 3.11-3.14
-- poetry 1.6+
+- poetry 2.0+
 
 To get started, ensure you have Python installed. Follow these steps:
 
@@ -189,21 +189,15 @@ The **Lightning Links Creator** can be run quickly and easily. Just follow these
 
 - Make sure you've followed all steps in the **Set Up** section (e.g., installed dependencies, configured API keys).
 
-2. Navigate to the `src/` directory within the project directory in your terminal
-
-``` bash
-  cd src/
-```
-
-3. **Run the Creator Script**
+2. **Run the Creator Script**
 
 - Use the following command to run the script in its simplest form:
 
 ``` bash
-   poetry run python lightning_links_creator.py
+   poetry run python -m src.lightning_links_creator
 ```
 
-4. **Enter in your notes directory**
+3. **Enter in your notes directory**
 
 - You will be prompted to enter a directory, this will be directory with in which you have all `.md` files in your
   obsidian project
@@ -211,7 +205,7 @@ The **Lightning Links Creator** can be run quickly and easily. Just follow these
 - By default, it will add the 3 most relevant notes to each file, as well as save the top 10 most relevant for smart
   assistant usage.
 
-5: Advanced Usage (Optional)
+4. Advanced Usage (Optional)
 
 - For advanced users you can cut away the prompting sections, and customize your smart links by adding arguments in the
   following order
@@ -219,13 +213,13 @@ The **Lightning Links Creator** can be run quickly and easily. Just follow these
   and can lead to slower response times in the extreme cases.
 
 ```bash 
- poetry run python lightning_links_creator.py [directory] [number of top connections to save] [number of links to add]
+ poetry run python -m src.lightning_links_creator [directory] [number of top connections to save] [number of links to add]
 ```
 
 Example
 
 ```bash 
- poetry run python lightning_links_creator.py myNotes/ 25 10
+ poetry run python -m src.lightning_links_creator myNotes/ 25 10
 ```
 
 ### Smart Assistant (Zeus)
@@ -241,18 +235,12 @@ Example
 - After processing, each note will have a "Lighting Links" section appended to its bottom, listing links to other
   related notes.
 
-3. Navigate to the `src/` directory within the project directory in your terminal
-
-``` bash
-  cd src/
-```
-
-4. **Run the Creator Script**
+3. **Run the Creator Script**
 
 - Use the following command to run the script in its simplest form:
 
 ``` bash
-   poetry run python smart_assistant.py
+   poetry run python -m src.smart_assistant
 ```
 
 4. **Enter in your notes directory**
