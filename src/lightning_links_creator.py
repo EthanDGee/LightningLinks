@@ -5,13 +5,16 @@ from time import time
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-from note_handler import FileParser
+from src.note_handler import FileParser
+from src.constants import (
+    NUM_LIGHTNING_LINKS,
+    NUM_REFERENCE_NOTES,
+    EMBEDDING_MODEL,
+)
 
 
 class LightningLinksCreator:
-    def __init__(
-        self, vault_path: str, num_lightning_links: int = 3, num_similar_notes: int = 10
-    ):
+    def __init__(self, vault_path: str):
         """
         A class for generating, managing, and updating similarity-based lightning links
         across a collection of notes.
@@ -33,10 +36,10 @@ class LightningLinksCreator:
         """
 
         # load model Source: https://huggingface.co/sentence-transformers/all-mpnet-base-v2
-        self.model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
+        self.model = SentenceTransformer(EMBEDDING_MODEL)
         self.file_handler = FileParser(vault_path)
-        self.num_lightning_links = num_lightning_links
-        self.num_similar_notes = num_similar_notes
+        self.num_lightning_links = NUM_LIGHTNING_LINKS
+        self.num_similar_notes = NUM_REFERENCE_NOTES
 
     def find_similarities(self, sentences):
         """
@@ -233,24 +236,7 @@ if __name__ == "__main__":
             else:
                 break
 
-    file_handler = FileParser(note_directory)
-    # number of similar notes
-
-    if len(arguments) > 2:
-        similar_count = int(arguments[2])
-    else:
-        similar_count = 10
-
-    # count lightning links
-
-    if len(arguments) > 3:
-        lightning_links_count = int(arguments[3])
-    else:
-        lightning_links_count = 3
-
     creator = LightningLinksCreator(
         note_directory,
-        num_lightning_links=lightning_links_count,
-        num_similar_notes=similar_count,
     )
     creator.refresh_similarities()

@@ -3,15 +3,16 @@ import os
 import re
 from pathlib import Path
 
-# final variables
-NOTE_EXTENSION = ".md"
-EXCLUSIVE_EXTENSION = ".excalidraw.md"
-LIGHTNING_LINKS_HEADER = "### Lightning Links"
-ENCODING = "utf-8"
-LINK_START = "[["
-LINK_END = "]]"
-YAML_INDICATOR = "---\n"
-TAG_INDICATOR = "#"
+from src.constants import (
+    NOTE_EXTENSION,
+    EXCLUSIVE_EXTENSION,
+    LIGHTNING_LINKS_HEADER,
+    ENCODING,
+    LINK_START,
+    LINK_END,
+    YAML_INDICATOR,
+    TAG_INDICATOR,
+)
 
 
 class FileParser:
