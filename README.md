@@ -82,6 +82,34 @@ poetry install
 
 ---
 
+## Development Setup
+
+For developers contributing to Lightning Links, additional setup is required to ensure code quality and consistency.
+
+1. **Install development dependencies**:
+
+```bash
+poetry install --with dev
+```
+
+This installs pre-commit and other development tools.
+
+2. **Set up pre-commit hooks**:
+
+```bash
+poetry run pre-commit install
+```
+
+Pre-commit will run automated checks before each commit. This is to ensure higher overall code quality and ensure proper formatting.
+
+To run pre-commit on all files manually:
+
+```bash
+poetry run pre-commit run --all-files
+```
+
+---
+
 ## How It Works
 
 ### Lightning Link Connector:
@@ -212,13 +240,13 @@ The **Lightning Links Creator** can be run quickly and easily. Just follow these
 - The more top connections you have the more accurate your assistant usage will be, but it will also be more expensive,
   and can lead to slower response times in the extreme cases.
 
-```bash 
+```bash
  poetry run python -m src.lightning_links_creator [directory] [number of top connections to save] [number of links to add]
 ```
 
 Example
 
-```bash 
+```bash
  poetry run python -m src.lightning_links_creator myNotes/ 25 10
 ```
 
@@ -292,5 +320,4 @@ This project is licensed under the MIT License. Please refer to the `LICENSE` fi
 ---
 
 Take your note-taking to the next level with **Lightning Links**! Let the automation connect your ideas, suggest new
-ones, and grow your Zettelkasten seamlessly! 
-
+ones, and grow your Zettelkasten seamlessly!
